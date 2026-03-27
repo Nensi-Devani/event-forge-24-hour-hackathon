@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../services/api';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 export default function ScoringOversight() {
   const [events, setEvents] = useState([]);
@@ -41,19 +41,19 @@ export default function ScoringOversight() {
       s.totalScore || 0,
     ]);
 
-    doc.autoTable({ head: [headers], body: data, startY: 48, styles: { fontSize: 10 }, headStyles: { fillColor: [0, 82, 204] } });
+    autoTable(doc, { head: [headers], body: data, startY: 48, styles: { fontSize: 10 }, headStyles: { fillColor: [0, 82, 204] } });
     doc.save(`${event?.title || 'scores'}_round_${round?.name || ''}.pdf`);
   };
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-headline font-extrabold text-on-surface tracking-tight">Scoring & Reports</h1>
           <p className="text-on-surface-variant mt-1">View scores and export event-wise data as PDF.</p>
         </div>
         {scores.length > 0 && (
-          <button onClick={exportPDF} className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:shadow-lg transition-all active:scale-95">
+          <button onClick={exportPDF} className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:shadow-lg transition-all active:scale-95 w-full md:w-auto justify-center">
             <span className="material-symbols-outlined text-lg">picture_as_pdf</span> Export PDF
           </button>
         )}

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import API from '../../services/api';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function AdminLeaderboard() {
   const [events, setEvents] = useState([]);
@@ -20,11 +22,45 @@ export default function AdminLeaderboard() {
     }
   }, [selectedEvent]);
 
+  const exportPDF = () => {
+    if (!event) return;
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text(`${event.title} - Leaderboard`, 14, 22);
+    doc.setFontSize(12);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 32);
+
+    const headers = ['Rank', 'Team', 'Leader', 'Members', 'Total Score'];
+    const data = leaderboard.map(entry => [
+      entry.rank,
+      entry.team?.teamName || 'N/A',
+      entry.team?.leader?.name || 'N/A',
+      (entry.team?.members?.length || 0) + 1,
+      entry.totalScore || 0,
+    ]);
+
+    autoTable(doc, { 
+      head: [headers], 
+      body: data, 
+      startY: 40, 
+      styles: { fontSize: 10 }, 
+      headStyles: { fillColor: [0, 82, 204] } 
+    });
+    doc.save(`${event.title.replace(/\s+/g, '_')}_Leaderboard.pdf`);
+  };
+
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-headline font-extrabold text-on-surface tracking-tight">Leaderboard</h1>
-        <p className="text-on-surface-variant mt-1">View event-wise team rankings.</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-headline font-extrabold text-on-surface tracking-tight">Leaderboard</h1>
+          <p className="text-on-surface-variant mt-1">View event-wise team rankings.</p>
+        </div>
+        {leaderboard.length > 0 && (
+          <button onClick={exportPDF} className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:shadow-lg transition-all active:scale-95 w-full md:w-auto justify-center">
+            <span className="material-symbols-outlined text-lg">picture_as_pdf</span> Export PDF
+          </button>
+        )}
       </div>
 
       <div className="mb-8 max-w-md">

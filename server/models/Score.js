@@ -11,6 +11,11 @@ const scoreSchema = new mongoose.Schema({
     ref: "Event"
   },
 
+  judge: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  },
+
   roundId: mongoose.Schema.Types.ObjectId, // from event.rounds
 
   criteriaScores: [

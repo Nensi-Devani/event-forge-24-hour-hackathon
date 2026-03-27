@@ -10,6 +10,7 @@ export default function Header() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const notifRef = useRef(null);
   const userRef = useRef(null);
 
@@ -68,12 +69,12 @@ export default function Header() {
           </div>
         </div>
 
-        <div className="flex-1 max-w-2xl mx-8">
+        <div className="flex-1 max-w-2xl mx-4 md:mx-8 hidden sm:block">
           <div className="relative group">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
             <input
-              className="w-full pl-12 pr-4 py-3 bg-surface-container-low border border-transparent rounded-full text-sm focus:border-primary/40 focus:bg-surface-container-lowest transition-all outline-none shadow-inner"
-              placeholder="Search tech events..."
+              className="w-full pl-12 pr-4 py-2 bg-surface-container-low border border-transparent rounded-full text-sm focus:border-primary/40 focus:bg-surface-container-lowest transition-all outline-none shadow-inner"
+              placeholder="Search events..."
               type="text"
             />
           </div>
@@ -125,9 +126,13 @@ export default function Header() {
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center gap-2 hover:bg-blue-50 rounded-xl px-3 py-1.5 transition-all"
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-                    {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                  </div>
+                  {user?.avatar ? (
+                    <img src={user.avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover border border-primary/20" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                      {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </div>
+                  )}
                   <span className="text-sm font-semibold text-on-surface hidden sm:block">{user?.name?.split(' ')[0]}</span>
                   <span className="material-symbols-outlined text-sm text-outline">expand_more</span>
                 </button>
@@ -149,12 +154,41 @@ export default function Header() {
             </>
           ) : (
             <>
-              <Link to="/login" className="text-primary font-bold text-sm hover:underline mr-2">Login</Link>
-              <Link to="/register" className="bg-gradient-primary text-white font-bold text-sm px-6 py-2.5 rounded-full hover:shadow-lg transition-all active:scale-95">Register</Link>
+              <Link to="/login" className="hidden sm:inline-block text-primary font-bold text-sm hover:underline mr-2">Login</Link>
+              <Link to="/register" className="hidden sm:inline-block bg-gradient-primary text-white font-bold text-sm px-6 py-2.5 rounded-full hover:shadow-lg transition-all active:scale-95">Register</Link>
             </>
           )}
+
+          {/* Mobile Menu Toggle */}
+          <button 
+            className="md:hidden p-2 text-on-surface hover:bg-surface-container rounded-lg"
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+          >
+            <span className="material-symbols-outlined">{showMobileMenu ? 'close' : 'menu'}</span>
+          </button>
         </div>
       </nav>
+
+      {/* Mobile Menu Overlay */}
+      {showMobileMenu && (
+        <div className="md:hidden absolute top-full left-0 w-full bg-white dark:bg-slate-950 border-t border-slate-100 dark:border-slate-800 shadow-xl py-4 px-6 flex flex-col gap-4 z-40">
+          <Link to="/" onClick={() => setShowMobileMenu(false)} className="text-on-surface font-bold text-lg hover:text-primary transition-colors">Explore</Link>
+          {isAuthenticated ? (
+            <>
+              <Link to="/teams" onClick={() => setShowMobileMenu(false)} className="text-on-surface font-bold text-lg hover:text-primary transition-colors">Teams</Link>
+              {isJudge && <Link to="/judge/dashboard" onClick={() => setShowMobileMenu(false)} className="text-on-surface font-bold text-lg hover:text-primary transition-colors">Judge Panel</Link>}
+              {isAdmin && <Link to="/admin/dashboard" onClick={() => setShowMobileMenu(false)} className="text-on-surface font-bold text-lg hover:text-primary transition-colors">Admin Data</Link>}
+              <Link to="/profile" onClick={() => setShowMobileMenu(false)} className="text-on-surface font-bold text-lg hover:text-primary transition-colors">My Profile</Link>
+              <button onClick={() => { handleLogout(); setShowMobileMenu(false); }} className="text-red-500 font-bold text-lg text-left hover:opacity-80 transition-colors">Logout</button>
+            </>
+          ) : (
+            <div className="flex flex-col gap-3 mt-4">
+              <Link to="/login" onClick={() => setShowMobileMenu(false)} className="border border-primary text-primary font-bold py-3 rounded-full text-center">Login</Link>
+              <Link to="/register" onClick={() => setShowMobileMenu(false)} className="bg-primary text-white font-bold py-3 rounded-full text-center">Register</Link>
+            </div>
+          )}
+        </div>
+      )}
     </header>
   );
 }

@@ -1,6 +1,7 @@
 import Event from "../models/Event.js";
 import Team from "../models/Team.js";
 import Score from "../models/Score.js";
+import { createNotification } from "./notificationController.js";
 
 // POST /api/events — Create event (admin)
 export const createEvent = async (req, res) => {
@@ -87,6 +88,18 @@ export const assignJudges = async (req, res) => {
       { new: true }
     ).populate("judges", "name email techStack");
     if (!event) return res.status(404).json({ message: "Event not found" });
+
+    // Send notifications to all assigned judges
+    judges.forEach(async (judgeId) => {
+      await createNotification(
+        judgeId,
+        "Assigned as Judge",
+        `You have been assigned to evaluate teams in the event "${event.title}".`,
+        "judge_approval",
+        "/judge/dashboard"
+      );
+    });
+
     res.json(event);
   } catch (error) {
     res.status(500).json({ message: error.message });

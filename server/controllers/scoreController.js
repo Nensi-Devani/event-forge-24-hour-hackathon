@@ -2,6 +2,7 @@ import Score from "../models/Score.js";
 import RoundResult from "../models/RoundResult.js";
 import Event from "../models/Event.js";
 import Team from "../models/Team.js";
+import { createNotification } from "./notificationController.js";
 
 // POST /api/scores — Judge submits score for a team in a round
 export const submitScore = async (req, res) => {
@@ -19,14 +20,24 @@ export const submitScore = async (req, res) => {
       return res.status(403).json({ message: "You are not assigned as a judge for this event" });
     }
 
+    // Verify scoring window
+    const now = new Date();
+    if (eventDoc.startDate && now < new Date(eventDoc.startDate)) {
+      return res.status(400).json({ message: "Scoring has not started for this event yet." });
+    }
+    if (eventDoc.endDate && now > new Date(eventDoc.endDate)) {
+      return res.status(400).json({ message: "Scoring has closed for this event." });
+    }
+
     // Calculate total score
     const totalScore = criteriaScores.reduce((sum, c) => sum + (c.score || 0), 0);
 
-    // Check if score already exists (update if so)
+    // Check if score already exists for THIS JUDGE (update if so)
     const existing = await Score.findOne({
       team,
       event,
       roundId,
+      judge: req.user._id,
     });
 
     let score;
@@ -39,22 +50,28 @@ export const submitScore = async (req, res) => {
         team,
         event,
         roundId,
+        judge: req.user._id,
         criteriaScores,
         totalScore,
       });
     }
 
-    // Update or create RoundResult
+    // Calculate Average Score for the Team in this Round
+    const allScoresForTeam = await Score.find({ team, event, roundId });
+    const sumScores = allScoresForTeam.reduce((sum, s) => sum + (s.totalScore || 0), 0);
+    const averageScore = sumScores / allScoresForTeam.length;
+
+    // Update or create RoundResult using the averageScore
     const existingResult = await RoundResult.findOne({ team, event, roundId });
     if (existingResult) {
-      existingResult.totalScore = totalScore;
+      existingResult.totalScore = averageScore;
       await existingResult.save();
     } else {
       await RoundResult.create({
         team,
         event,
         roundId,
-        totalScore,
+        totalScore: averageScore,
         rank: 0,
         isQualified: true,
       });
@@ -65,6 +82,18 @@ export const submitScore = async (req, res) => {
     for (let i = 0; i < allResults.length; i++) {
       allResults[i].rank = i + 1;
       await allResults[i].save();
+    }
+
+    // Notify team leader
+    const teamDoc = await Team.findById(team);
+    if (teamDoc) {
+      await createNotification(
+        teamDoc.leader,
+        "Score Updated",
+        `Your team "${teamDoc.teamName}" has been scored in round ${roundId}. Total score: ${totalScore}`,
+        "score_update",
+        "/profile"
+      );
     }
 
     res.status(201).json(score);
@@ -110,7 +139,7 @@ export const getTeamsForScoring = async (req, res) => {
     // Get existing scores for this round if roundId is provided
     let scores = [];
     if (roundId) {
-      scores = await Score.find({ event: eventId, roundId });
+      scores = await Score.find({ event: eventId, roundId, judge: req.user._id });
     }
 
     const teamsWithScores = teams.map((team) => {

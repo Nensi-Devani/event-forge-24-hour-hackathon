@@ -18,6 +18,8 @@ const eventSchema = new mongoose.Schema({
   maxTeams: Number,
 
   registrationDeadline: Date,
+  startDate: Date,
+  endDate: Date,
 
   // Payment
   isPaid: {

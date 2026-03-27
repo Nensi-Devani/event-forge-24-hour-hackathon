@@ -26,7 +26,13 @@ export default function TeamRegistration() {
     if (selectedEvent) API.get(`/events/${selectedEvent}`).then(res => setEvent(res.data)).catch(console.error);
   }, [selectedEvent]);
 
-  const addMember = () => setMembers([...members, { name: '', email: '' }]);
+  const addMember = () => {
+    if (event && members.length >= event.maxTeamSize - 1) {
+      setError(`Maximum team size is ${event.maxTeamSize} (including leader).`);
+      return;
+    }
+    setMembers([...members, { name: '', email: '' }]);
+  };
   const removeMember = (idx) => setMembers(members.filter((_, i) => i !== idx));
   const updateMember = (idx, field, value) => {
     const updated = [...members];
@@ -34,16 +40,102 @@ export default function TeamRegistration() {
     setMembers(updated);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault(); setError(''); setSuccess(''); setLoading(true);
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePaymentAndRegister = async (validMembers) => {
+    if (event.isPaid && event.registrationFee) {
+      const res = await loadRazorpayScript();
+      if (!res) {
+        setLoading(false);
+        return setError("Razorpay SDK failed to load. Are you online?");
+      }
+
+      try {
+        const orderData = await API.post('/payments/create-order', { amount: event.registrationFee });
+        const order = orderData.data;
+
+        const options = {
+          key: "rzp_test_SWM057Fqu5Avzj",
+          amount: order.amount,
+          currency: order.currency,
+          name: "Event Forge",
+          description: `Registration for ${event.title}`,
+          order_id: order.id,
+          handler: async function (response) {
+            try {
+              const verifyRes = await API.post('/payments/verify', response);
+              if (verifyRes.data.success) {
+                // Payment successful, now register team
+                await registerTeamInDB(validMembers);
+              } else {
+                setError("Payment verification failed.");
+                setLoading(false);
+              }
+            } catch (err) {
+              setError("Payment verification error.");
+              setLoading(false);
+            }
+          },
+          prefill: {
+            name: user?.name,
+            email: user?.email,
+          },
+          theme: { color: "#0052CC" }
+        };
+
+        const paymentObject = new window.Razorpay(options);
+        paymentObject.on('payment.failed', function (response) {
+          setError(response.error.description);
+          setLoading(false);
+        });
+        paymentObject.open();
+      } catch (err) {
+        setError("Error creating payment order.");
+        setLoading(false);
+      }
+    } else {
+      await registerTeamInDB(validMembers);
+    }
+  };
+
+  const registerTeamInDB = async (validMembers) => {
     try {
-      const validMembers = members.filter(m => m.email.trim());
       await API.post('/teams', { teamName, eventId: selectedEvent, members: validMembers });
       setSuccess('Team registered! Verification emails sent to members.');
       setTimeout(() => navigate('/teams'), 2000);
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
     } finally { setLoading(false); }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault(); setError(''); setSuccess(''); setLoading(true);
+    try {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.(com|ac\.in)$/i;
+      const validMembers = members.filter(m => m.email.trim());
+      for (const m of validMembers) {
+        if (!emailRegex.test(m.email)) {
+          setLoading(false);
+          return setError(`Invalid email format for ${m.name || m.email}. Must be a valid domain like .com or .ac.in`);
+        }
+        if (m.email.trim().toLowerCase() === user.email.toLowerCase()) {
+           setLoading(false);
+           return setError(`You are the leader and will automatically be added. Do not add yourself as a member.`);
+        }
+      }
+      await handlePaymentAndRegister(validMembers);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Registration failed');
+      setLoading(false);
+    }
   };
 
   return (
@@ -74,6 +166,7 @@ export default function TeamRegistration() {
             <div className="p-4 bg-blue-50 rounded-xl text-sm">
               <p className="font-bold text-blue-700">{event.title}</p>
               <p className="text-blue-600 text-xs mt-1">Team size: {event.minTeamSize} - {event.maxTeamSize} members · Deadline: {new Date(event.registrationDeadline).toLocaleDateString()}</p>
+              {event.isPaid && <p className="text-blue-600 font-bold mt-2">Registration Fee: ₹{event.registrationFee}</p>}
             </div>
           )}
 
@@ -114,7 +207,13 @@ export default function TeamRegistration() {
             </p>
           </div>
 
-          <button type="submit" disabled={loading || !selectedEvent} className="w-full bg-primary text-white font-bold py-4 rounded-xl hover:shadow-lg active:scale-[0.98] transition-all disabled:opacity-50 text-lg">
+          <button type="submit" disabled={loading || !selectedEvent} className="w-full bg-primary text-white font-bold py-4 rounded-xl hover:shadow-lg active:scale-[0.98] transition-all disabled:opacity-50 text-lg flex items-center justify-center gap-2">
+            {loading && (
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            )}
             {loading ? 'Registering...' : 'Register Team'}
           </button>
         </form>

@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import VerificationToken from "../models/VerificationToken.js";
 import crypto from "crypto";
 import { sendEmail } from "../utils/sendEmail.js";
+import { createNotification } from "./notificationController.js";
 
 // POST /api/teams — Create team for an event
 export const createTeam = async (req, res) => {
@@ -68,6 +69,7 @@ export const createTeam = async (req, res) => {
     // Prepare members array
     const teamMembers = [];
     for (const member of members || []) {
+      if (member.email.toLowerCase() === req.user.email.toLowerCase()) continue;
       const memberUser = await User.findOne({ email: member.email });
       teamMembers.push({
         name: member.name,
@@ -84,8 +86,16 @@ export const createTeam = async (req, res) => {
       members: teamMembers,
     });
 
-    // Send verification emails to members
-    for (const member of teamMembers) {
+    await createNotification(
+      req.user._id, 
+      "Team Registered", 
+      `Your team "${teamName}" has been successfully registered for "${event.title}".`,
+      "general", 
+      "/teams"
+    );
+
+    // Send verification emails to members asynchronously
+    Promise.all(teamMembers.map(async (member) => {
       const token = crypto.randomBytes(32).toString("hex");
       await VerificationToken.create({
         email: member.email,
@@ -116,7 +126,7 @@ export const createTeam = async (req, res) => {
       } catch (mailErr) {
         console.log(`Failed to send invite to ${member.email}:`, mailErr.message);
       }
-    }
+    })).catch(err => console.error("Error sending emails:", err));
 
     const populated = await Team.findById(team._id)
       .populate("leader", "name email")

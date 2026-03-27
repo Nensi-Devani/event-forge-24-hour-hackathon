@@ -1,13 +1,17 @@
 import express from "express";
 import {
   getUsers, getUser, createUser, updateUser, deleteUser,
-  changeRole, getPendingJudges, getUserStats,
+  changeRole, getPendingJudges, getUserStats, updateProfile, updatePassword
 } from "../controllers/userController.js";
 import { protect, authorize } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// All routes are admin-only
+// Protected user routes
+router.put("/profile", protect, updateProfile);
+router.put("/password", protect, updatePassword);
+
+// All routes below are admin-only
 router.use(protect, authorize("admin"));
 
 router.get("/stats", getUserStats);

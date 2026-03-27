@@ -1,5 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
+import Team from "../models/Team.js";
+import Event from "../models/Event.js";
 
 // GET /api/users — List users (paginated, filterable by role)
 export const getUsers = async (req, res) => {
@@ -96,6 +98,14 @@ export const deleteUser = async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Cleanup related user references
+    await Team.deleteMany({ leader: req.params.id });
+    await Team.updateMany({ members: req.params.id }, { $pull: { members: req.params.id } });
+    if (user.role === 'judge') {
+      await Event.updateMany({ judges: req.params.id }, { $pull: { judges: req.params.id } });
+    }
+
     res.json({ message: "User deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -138,6 +148,51 @@ export const getUserStats = async (req, res) => {
     const totalAdmins = await User.countDocuments({ role: "admin" });
     const unverified = await User.countDocuments({ isEmailVerified: false });
     res.json({ totalUsers, totalParticipants, totalJudges, totalAdmins, unverified });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// PUT /api/users/profile — User updates their own profile
+export const updateProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (req.body.name) user.name = req.body.name;
+    if (req.body.avatar) user.avatar = req.body.avatar;
+    if (req.body.techStack && (user.role === 'judge' || user.role === 'admin' || user.role === 'participant')) {
+      user.techStack = req.body.techStack;
+    }
+
+    const updatedUser = await user.save();
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      techStack: updatedUser.techStack,
+      avatar: updatedUser.avatar
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// PUT /api/users/password — User updates their own password
+export const updatePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) return res.status(400).json({ message: "Incorrect current password" });
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    
+    res.json({ message: "Password updated successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

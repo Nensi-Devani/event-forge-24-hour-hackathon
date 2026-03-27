@@ -9,6 +9,7 @@ import userRoutes from './routes/userRoutes.js';
 import teamRoutes from './routes/teamRoutes.js';
 import scoreRoutes from './routes/scoreRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/scores', scoreRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/payments', paymentRoutes);
 
 const PORT = process.env.PORT || 3000;
 

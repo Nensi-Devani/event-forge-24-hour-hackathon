@@ -18,7 +18,7 @@ export default function EventManagement() {
     return {
       title: '', description: '', rules: '', type: 'technical', banner: '',
       minTeamSize: 2, maxTeamSize: 5, maxTeams: 50,
-      registrationDeadline: '', isPaid: false, registrationFee: 0,
+      registrationDeadline: '', startDate: '', endDate: '', isPaid: false, registrationFee: 0,
       rounds: [{ name: 'Round 1', roundNumber: 1, rules: '', evaluationCriteria: [{ name: 'Innovation', maxScore: 20 }], isSubmissionRequired: false, qualification: { type: 'top_n', value: 10 } }],
     };
   }
@@ -58,6 +58,8 @@ export default function EventManagement() {
       type: event.type || 'technical', banner: event.banner || '',
       minTeamSize: event.minTeamSize || 2, maxTeamSize: event.maxTeamSize || 5, maxTeams: event.maxTeams || 50,
       registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0,16) : '',
+      startDate: event.startDate ? new Date(event.startDate).toISOString().slice(0,16) : '',
+      endDate: event.endDate ? new Date(event.endDate).toISOString().slice(0,16) : '',
       isPaid: event.isPaid || false, registrationFee: event.registrationFee || 0,
       rounds: event.rounds || [],
     });
@@ -116,12 +118,12 @@ export default function EventManagement() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-headline font-extrabold text-on-surface tracking-tight">Event Management</h1>
           <p className="text-on-surface-variant mt-1">{total} events total</p>
         </div>
-        <button onClick={() => { setShowForm(true); setEditing(null); setFormData(getEmptyForm()); }} className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:shadow-lg transition-all active:scale-95">
+        <button onClick={() => { setShowForm(true); setEditing(null); setFormData(getEmptyForm()); }} className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:shadow-lg transition-all active:scale-95 w-full md:w-auto justify-center">
           <span className="material-symbols-outlined text-lg">add</span> Create Event
         </button>
       </div>
@@ -226,8 +228,8 @@ export default function EventManagement() {
                 <input value={formData.banner} onChange={e => setFormData({...formData, banner: e.target.value})} className="w-full bg-surface-container-low border border-transparent focus:border-primary/40 rounded-xl py-2.5 px-4 text-sm outline-none" placeholder="https://..." />
               </div>
 
-              {/* Team & Registration */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Team Size */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider mb-1">Min Team Size</label>
                   <input type="number" min={1} value={formData.minTeamSize} onChange={e => setFormData({...formData, minTeamSize: Number(e.target.value)})} className="w-full bg-surface-container-low border border-transparent focus:border-primary/40 rounded-xl py-2.5 px-4 text-sm outline-none" />
@@ -240,9 +242,21 @@ export default function EventManagement() {
                   <label className="block text-xs font-bold uppercase tracking-wider mb-1">Max Teams</label>
                   <input type="number" min={1} value={formData.maxTeams} onChange={e => setFormData({...formData, maxTeams: Number(e.target.value)})} className="w-full bg-surface-container-low border border-transparent focus:border-primary/40 rounded-xl py-2.5 px-4 text-sm outline-none" />
                 </div>
+              </div>
+
+              {/* Dates */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider mb-1">Deadline</label>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1">Registrations Close</label>
                   <input type="datetime-local" value={formData.registrationDeadline} onChange={e => setFormData({...formData, registrationDeadline: e.target.value})} className="w-full bg-surface-container-low border border-transparent focus:border-primary/40 rounded-xl py-2.5 px-4 text-sm outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1">Event Start</label>
+                  <input type="datetime-local" value={formData.startDate} onChange={e => setFormData({...formData, startDate: e.target.value})} className="w-full bg-surface-container-low border border-transparent focus:border-primary/40 rounded-xl py-2.5 px-4 text-sm outline-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1">Event End</label>
+                  <input type="datetime-local" value={formData.endDate} onChange={e => setFormData({...formData, endDate: e.target.value})} className="w-full bg-surface-container-low border border-transparent focus:border-primary/40 rounded-xl py-2.5 px-4 text-sm outline-none" />
                 </div>
               </div>
 

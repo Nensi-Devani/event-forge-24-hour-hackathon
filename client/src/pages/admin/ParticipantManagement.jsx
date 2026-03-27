@@ -10,6 +10,7 @@ export default function ParticipantManagement() {
   const [roleFilter, setRoleFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState(null);
   const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'participant', techStack: '' });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -30,10 +31,21 @@ export default function ParticipantManagement() {
     e.preventDefault(); setSubmitting(true); setError('');
     try {
       const payload = { ...formData, techStack: formData.role === 'judge' ? formData.techStack.split(',').map(s => s.trim()).filter(Boolean) : [] };
-      await API.post('/users', payload);
-      setShowForm(false); setFormData({ name: '', email: '', password: '', role: 'participant', techStack: '' });
+      if (editing) {
+        if (!payload.password) delete payload.password; // Don't send empty password
+        await API.put(`/users/${editing}`, payload);
+      } else {
+        await API.post('/users', payload);
+      }
+      setShowForm(false); setEditing(null); setFormData({ name: '', email: '', password: '', role: 'participant', techStack: '' });
       fetchUsers();
     } catch (err) { setError(err.response?.data?.message || 'Failed'); } finally { setSubmitting(false); }
+  };
+
+  const openEdit = (u) => {
+    setEditing(u._id);
+    setFormData({ name: u.name, email: u.email, password: '', role: u.role, techStack: Array.isArray(u.techStack) ? u.techStack.join(', ') : '' });
+    setShowForm(true);
   };
 
   const handleRoleChange = async (userId, newRole) => {
@@ -47,12 +59,12 @@ export default function ParticipantManagement() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-headline font-extrabold text-on-surface tracking-tight">User Management</h1>
           <p className="text-on-surface-variant mt-1">{total} users total</p>
         </div>
-        <button onClick={() => setShowForm(true)} className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:shadow-lg transition-all active:scale-95">
+        <button onClick={() => { setShowForm(true); setEditing(null); setFormData({ name: '', email: '', password: '', role: 'participant', techStack: '' }); }} className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:shadow-lg transition-all active:scale-95 w-full md:w-auto justify-center">
           <span className="material-symbols-outlined text-lg">person_add</span> Add User
         </button>
       </div>
@@ -102,7 +114,10 @@ export default function ParticipantManagement() {
                   </td>
                   <td className="px-6 py-4 text-sm text-outline">{new Date(u.createdAt).toLocaleDateString()}</td>
                   <td className="px-6 py-4 text-right">
-                    <button onClick={() => handleDelete(u._id)} className="p-2 hover:bg-red-50 rounded-lg transition-colors"><span className="material-symbols-outlined text-red-500 text-lg">delete</span></button>
+                    <div className="flex justify-end gap-2">
+                      <button onClick={() => openEdit(u)} className="p-2 hover:bg-blue-50 rounded-lg transition-colors"><span className="material-symbols-outlined text-primary text-lg">edit</span></button>
+                      <button onClick={() => handleDelete(u._id)} className="p-2 hover:bg-red-50 rounded-lg transition-colors"><span className="material-symbols-outlined text-red-500 text-lg">delete</span></button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -120,16 +135,15 @@ export default function ParticipantManagement() {
         </div>
       )}
 
-      {/* Add User Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setShowForm(false); setEditing(null); }}>
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
-            <h2 className="text-xl font-headline font-bold mb-6">Add New User</h2>
+            <h2 className="text-xl font-headline font-bold mb-6">{editing ? 'Edit User' : 'Add New User'}</h2>
             {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">{error}</div>}
             <form onSubmit={handleCreate} className="space-y-4">
               <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Full Name" className="w-full bg-surface-container-low rounded-xl py-3 px-4 text-sm outline-none border border-transparent focus:border-primary/40" />
               <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="Email" className="w-full bg-surface-container-low rounded-xl py-3 px-4 text-sm outline-none border border-transparent focus:border-primary/40" />
-              <input required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} placeholder="Password" type="password" className="w-full bg-surface-container-low rounded-xl py-3 px-4 text-sm outline-none border border-transparent focus:border-primary/40" />
+              <input value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} placeholder={editing ? 'Change Password (optional)' : 'Password'} type="password" required={!editing} className="w-full bg-surface-container-low rounded-xl py-3 px-4 text-sm outline-none border border-transparent focus:border-primary/40" />
               <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full bg-surface-container-low rounded-xl py-3 px-4 text-sm outline-none border border-transparent focus:border-primary/40">
                 <option value="participant">Participant</option>
                 <option value="judge">Judge</option>
@@ -138,8 +152,8 @@ export default function ParticipantManagement() {
                 <input value={formData.techStack} onChange={e => setFormData({...formData, techStack: e.target.value})} placeholder="Tech Stack (comma separated)" className="w-full bg-surface-container-low rounded-xl py-3 px-4 text-sm outline-none border border-transparent focus:border-primary/40" />
               )}
               <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-3 rounded-xl border font-bold text-sm">Cancel</button>
-                <button type="submit" disabled={submitting} className="flex-1 py-3 rounded-xl bg-primary text-white font-bold text-sm disabled:opacity-50">{submitting ? 'Adding...' : 'Add User'}</button>
+                <button type="button" onClick={() => { setShowForm(false); setEditing(null); }} className="flex-1 py-3 rounded-xl border font-bold text-sm">Cancel</button>
+                <button type="submit" disabled={submitting} className="flex-1 py-3 rounded-xl bg-primary text-white font-bold text-sm disabled:opacity-50">{submitting ? 'Saving...' : editing ? 'Update User' : 'Add User'}</button>
               </div>
             </form>
           </div>
