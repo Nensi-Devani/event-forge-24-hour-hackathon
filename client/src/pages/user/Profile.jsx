@@ -5,7 +5,7 @@ import API from '../../services/api';
 import { useAuth } from '../../utils/AuthContext';
 
 export default function Profile() {
-  const { user } = useAuth(); 
+  const { user, updateUserData } = useAuth();
   const [myTeams, setMyTeams] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,11 +26,11 @@ export default function Profile() {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      const payload = { ...editForm, techStack: editForm.techStack.split(',').map(s=>s.trim()).filter(Boolean) };
-      await API.put('/users/profile', payload);
+      const payload = { ...editForm, techStack: editForm.techStack ? editForm.techStack.split(',').map(s=>s.trim()).filter(Boolean) : [] };
+      const res = await API.put('/users/profile', payload);
+      updateUserData(res.data);
       setMsg({ type: 'success', text: 'Profile updated!' });
       setIsEditing(false);
-      setTimeout(() => window.location.reload(), 1000);
     } catch(err) {
       setMsg({ type: 'error', text: err.response?.data?.message || 'Update failed' });
     }

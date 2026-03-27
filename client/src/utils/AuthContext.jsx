@@ -39,6 +39,10 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("user");
   };
 
+  const updateUserData = (newUserData) => {
+    setUser(newUserData);
+  };
+
   const isAdmin = user?.role === "admin";
   const isJudge = user?.role === "judge";
   const isParticipant = user?.role === "participant";
@@ -46,7 +50,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, logout, isAdmin, isJudge, isParticipant, isAuthenticated, loading }}
+      value={{ user, token, login, logout, updateUserData, isAdmin, isJudge, isParticipant, isAuthenticated, loading }}
     >
       {children}
     </AuthContext.Provider>
