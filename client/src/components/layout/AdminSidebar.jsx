@@ -13,8 +13,8 @@ export default function AdminSidebar({ isOpen, onClose }) {
     { name: "Participants", path: "/admin/participants", icon: "person" },
     { name: "Judges", path: "/admin/judges", icon: "gavel" },
     { name: "Payments", path: "/admin/payments", icon: "payments" },
-    { name: "Scoring", path: "/admin/scoring", icon: "score" },
-    { name: "Leaderboard", path: "/admin/leaderboard", icon: "leaderboard" },
+    // { name: "Scoring", path: "/admin/scoring", icon: "score" },
+    // { name: "Leaderboard", path: "/admin/leaderboard", icon: "leaderboard" },
     { name: "Reports", path: "/admin/reports", icon: "monitoring" },
   ];
 
