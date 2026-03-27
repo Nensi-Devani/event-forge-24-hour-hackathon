@@ -2,6 +2,7 @@ import React from "react";
 
 export default function PaymentManagement() {
   const transactions = [
+<<<<<<< HEAD
     {
       id: "#TXN-88291",
       team: "Velocity Strikers",
@@ -49,6 +50,12 @@ export default function PaymentManagement() {
       statusColor: "bg-tertiary-fixed text-on-tertiary-fixed-variant",
       activeRow: true,
     },
+=======
+    { id: '#TXN-88291', team: 'Velocity Strikers', event: 'Nexus Summer Open', amount: '₹150.00', date: 'Oct 24, 2023', method: 'Credit Card', methodIcon: 'credit_card', status: 'Paid', statusColor: 'bg-tertiary-fixed text-on-tertiary-fixed-variant' },
+    { id: '#TXN-88292', team: 'Iron Titans', event: 'Fall Championship', amount: '₹150.00', date: 'Oct 25, 2023', method: 'PayPal', methodIcon: 'account_balance_wallet', methodIconColor: 'text-blue-500', status: 'Pending', statusColor: 'bg-surface-container-high text-slate-600', activeRow: true },
+    { id: '#TXN-88293', team: 'Cloud Runners', event: 'Elite Invitational', amount: '₹150.00', date: 'Oct 26, 2023', method: 'Credit Card', methodIcon: 'credit_card', status: 'Refunded', statusColor: 'bg-error-container text-on-error-container' },
+    { id: '#TXN-88294', team: 'Neon Knights', event: 'Regional Qualifiers', amount: '₹150.00', date: 'Oct 27, 2023', method: 'Credit Card', methodIcon: 'credit_card', status: 'Paid', statusColor: 'bg-tertiary-fixed text-on-tertiary-fixed-variant', activeRow: true },
+>>>>>>> 3a7f44ac2d84a0ea0fa3a21b1db0bf947bde24c5
   ];
 
   return (
@@ -66,12 +73,17 @@ export default function PaymentManagement() {
             {/* Card 1: Total Revenue */}
             <div className="bg-surface-container-lowest p-8 rounded-xl shadow-[0px_20px_40px_rgba(0,24,72,0.06)] flex flex-col justify-between h-48 relative overflow-hidden group border border-slate-100 dark:border-slate-800">
               <div className="z-10">
+<<<<<<< HEAD
                 <p className="text-sm font-semibold text-secondary uppercase tracking-wider mb-2 font-label">
                   Total Revenue
                 </p>
                 <h3 className="text-4xl font-extrabold text-on-surface font-headline">
                   $142,550.00
                 </h3>
+=======
+                <p className="text-sm font-semibold text-secondary uppercase tracking-wider mb-2 font-label">Total Revenue</p>
+                <h3 className="text-4xl font-extrabold text-on-surface font-headline">₹142,550.00</h3>
+>>>>>>> 3a7f44ac2d84a0ea0fa3a21b1db0bf947bde24c5
               </div>
               <div className="z-10 flex items-center gap-2 text-tertiary font-bold text-sm">
                 <span className="material-symbols-outlined">trending_up</span>
@@ -87,12 +99,17 @@ export default function PaymentManagement() {
             {/* Card 2: Pending Payments */}
             <div className="bg-surface-container-lowest p-8 rounded-xl shadow-[0px_20px_40px_rgba(0,24,72,0.06)] flex flex-col justify-between h-48 relative overflow-hidden group border-b-4 border-blue-500">
               <div className="z-10">
+<<<<<<< HEAD
                 <p className="text-sm font-semibold text-secondary uppercase tracking-wider mb-2 font-label">
                   Pending Payments
                 </p>
                 <h3 className="text-4xl font-extrabold text-on-surface font-headline">
                   $8,450.00
                 </h3>
+=======
+                <p className="text-sm font-semibold text-secondary uppercase tracking-wider mb-2 font-label">Pending Payments</p>
+                <h3 className="text-4xl font-extrabold text-on-surface font-headline">₹8,450.00</h3>
+>>>>>>> 3a7f44ac2d84a0ea0fa3a21b1db0bf947bde24c5
               </div>
               <div className="z-10 flex items-center gap-2 text-slate-500 font-bold text-sm">
                 <span className="material-symbols-outlined">schedule</span>
@@ -108,12 +125,17 @@ export default function PaymentManagement() {
             {/* Card 3: Refunds */}
             <div className="bg-surface-container-lowest p-8 rounded-xl shadow-[0px_20px_40px_rgba(0,24,72,0.06)] flex flex-col justify-between h-48 relative overflow-hidden group border border-slate-100 dark:border-slate-800">
               <div className="z-10">
+<<<<<<< HEAD
                 <p className="text-sm font-semibold text-secondary uppercase tracking-wider mb-2 font-label">
                   Refunds processed
                 </p>
                 <h3 className="text-4xl font-extrabold text-on-surface font-headline">
                   $1,200.00
                 </h3>
+=======
+                <p className="text-sm font-semibold text-secondary uppercase tracking-wider mb-2 font-label">Refunds processed</p>
+                <h3 className="text-4xl font-extrabold text-on-surface font-headline">₹1,200.00</h3>
+>>>>>>> 3a7f44ac2d84a0ea0fa3a21b1db0bf947bde24c5
               </div>
               <div className="z-10 flex items-center gap-2 text-error font-bold text-sm">
                 <span className="material-symbols-outlined">history</span>

@@ -23,12 +23,8 @@ import EventDetails from "./pages/event/EventDetails";
 import Leaderboard from "./pages/event/Leaderboard";
 
 // Team Pages
-<<<<<<< HEAD
-import Directory from './pages/team/Directory';
-import TeamRegistration from './pages/team/Registration';
-=======
 import Directory from "./pages/team/Directory";
-import Registration from "./pages/team/Registration";
+import TeamRegistration from "./pages/team/Registration";
 import TeamsDirectory from "./pages/team/TeamsDirectory";
 
 // Judge Pages
@@ -47,8 +43,6 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/events/:id" element={<EventDetails />} />
         <Route path="/events/:id/leaderboard" element={<Leaderboard />} />
-<<<<<<< HEAD
-        
         {/* Auth & User Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -57,14 +51,6 @@ function App() {
         {/* Team Routes */}
         <Route path="/teams" element={<Directory />} />
         <Route path="/teams/register" element={<TeamRegistration />} />
-        
-=======
-
-        {/* Team Routes */}
-        <Route path="/teams" element={<Directory />} />
-        <Route path="/register" element={<Registration />} />
-
->>>>>>> 32533c240d0c7f3ecbd528bcdf1092fda4069788
         {/* Judge Routes */}
         <Route path="/judge/dashboard" element={<JudgeDashboard />} />
 

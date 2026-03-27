@@ -133,6 +133,19 @@ export default function JudgeDashboard() {
                   </div>
                 </div>
 
+                {/* Scoring Round Selector */}
+                <div className="mb-10 border-b border-surface-container-low flex gap-8">
+                  <button className="pb-3 border-b-2 border-primary text-primary font-bold text-sm">
+                    Round 1: Video Submission
+                  </button>
+                  <button className="pb-3 border-b-2 border-transparent text-slate-500 font-bold text-sm hover:text-primary transition-colors">
+                    Round 2: Technical Review
+                  </button>
+                  <button className="pb-3 border-b-2 border-transparent text-slate-500 font-bold text-sm hover:text-primary transition-colors">
+                    Round 3: Live Pitch
+                  </button>
+                </div>
+
                 {/* Sliders Form */}
                 <div className="space-y-8">
                   <ScoreCriterion 

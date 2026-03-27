@@ -66,6 +66,7 @@ export default function TeamRegistration() {
                   <div className="flex items-center gap-3 relative z-10">
                     <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
                     <h3 className="font-headline font-extrabold text-lg">Team Leader</h3>
+                    <span className="px-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed-variant text-[10px] font-bold rounded-full uppercase tracking-tighter shadow-sm flex items-center gap-1"><span className="material-symbols-outlined text-[10px]">check_circle</span> Verified</span>
                   </div>
                   <div className="grid md:grid-cols-2 gap-6 relative z-10">
                     <div className="space-y-2">
@@ -85,6 +86,7 @@ export default function TeamRegistration() {
                     <div className="flex items-center gap-3">
                       <span className="material-symbols-outlined text-secondary">person</span>
                       <h3 className="font-headline font-extrabold text-lg">Member 2</h3>
+                      <span className="px-2 py-0.5 bg-surface-container-high text-on-surface-variant text-[10px] font-bold rounded-full uppercase tracking-tighter">Pending Verification</span>
                     </div>
                     <button className="text-error text-sm font-bold flex items-center gap-1 hover:text-error/80 transition-colors">
                       <span className="material-symbols-outlined text-sm">delete</span> Remove
