@@ -1,13 +1,18 @@
 import User from "../models/User.js";
 import VerificationToken from "../models/VerificationToken.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { sendEmail } from "../utils/sendEmail.js";
 
-// REGISTER API
+const generateToken = (id, role) => {
+  return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+};
+
+// POST /api/auth/register
 export const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role, techStack } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -20,63 +25,111 @@ export const register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      isEmailVerified: false
+      role: role === "judge" ? "judge" : "participant",
+      techStack: role === "judge" && techStack ? techStack : [],
+      isEmailVerified: false,
     });
 
-    const token = crypto.randomBytes(32).toString("hex");
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     await VerificationToken.create({
       email,
-      token,
+      token: otp,
       type: "USER_VERIFY",
-      expiresAt: Date.now() + 1000 * 60 * 60
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 min
     });
 
-    const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
-
-    await sendEmail(
-      email,
-      "Verify Your Email",
-      `<a href="${verificationLink}">Verify Email</a>`
-    );
+    try {
+      await sendEmail(
+        email,
+        "Event Forge - Email Verification",
+        `<div style="font-family:sans-serif;padding:20px;">
+          <h2>Email Verification</h2>
+          <p>Your verification OTP is:</p>
+          <h1 style="color:#0052CC;letter-spacing:8px;">${otp}</h1>
+          <p>This OTP expires in 10 minutes.</p>
+        </div>`
+      );
+    } catch (mailErr) {
+      console.log("Mail sending failed (OTP still saved):", mailErr.message);
+    }
 
     res.status(201).json({
-      message: "User registered. Please verify your email."
+      message: "Registration successful. Please verify your email with the OTP sent.",
+      email,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-
-// VERIFY EMAIL API
-export const verifyEmail = async (req, res) => {
+// POST /api/auth/verify-otp
+export const verifyOtp = async (req, res) => {
   try {
-    const { token } = req.query;
+    const { email, otp } = req.body;
 
     const tokenDoc = await VerificationToken.findOne({
-      token,
-      type: "USER_VERIFY"
+      email,
+      token: otp,
+      type: "USER_VERIFY",
     });
 
     if (!tokenDoc) {
-      return res.status(400).json({ message: "Invalid token" });
+      return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    if (tokenDoc.expiresAt < Date.now()) {
-      return res.status(400).json({ message: "Token expired" });
+    if (tokenDoc.expiresAt < new Date()) {
+      await VerificationToken.deleteOne({ _id: tokenDoc._id });
+      return res.status(400).json({ message: "OTP has expired. Please register again." });
     }
 
-    await User.updateOne(
-      { email: tokenDoc.email },
-      { isEmailVerified: true }
-    );
-
+    await User.updateOne({ email }, { isEmailVerified: true });
     await VerificationToken.deleteOne({ _id: tokenDoc._id });
 
-    res.json({ message: "Email verified successfully" });
+    res.json({ message: "Email verified successfully. You can now log in." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
+// POST /api/auth/login
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+
+    if (!user.isEmailVerified) {
+      return res.status(403).json({ message: "Please verify your email before logging in." });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+
+    const token = generateToken(user._id, user.role);
+
+    res.json({
+      token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        techStack: user.techStack,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// GET /api/auth/me
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+    res.json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

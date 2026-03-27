@@ -4,7 +4,10 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { AuthProvider } from "./utils/AuthContext";
+import ProtectedRoute from "./components/layout/ProtectedRoute";
 import AdminLayout from "./components/layout/AdminLayout";
+import JudgeLayout from "./components/layout/JudgeLayout";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -29,46 +32,59 @@ import TeamsDirectory from "./pages/team/TeamsDirectory";
 
 // Judge Pages
 import JudgeDashboard from "./pages/judge/Dashboard";
+import JudgeEvents from "./pages/judge/JudgeEvents";
+import JudgeScoring from "./pages/judge/JudgeScoring";
 
 // Auth & User Pages
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import Profile from './pages/user/Profile';
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import Profile from "./pages/user/Profile";
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Public / Event Routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/events/:id" element={<EventDetails />} />
-        <Route path="/events/:id/leaderboard" element={<Leaderboard />} />
-        {/* Auth & User Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/profile" element={<Profile />} />
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public / Event Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/events/:id" element={<EventDetails />} />
+          <Route path="/events/:id/leaderboard" element={<Leaderboard />} />
 
-        {/* Team Routes */}
-        <Route path="/teams" element={<Directory />} />
-        <Route path="/teams/register" element={<TeamRegistration />} />
-        {/* Judge Routes */}
-        <Route path="/judge/dashboard" element={<JudgeDashboard />} />
+          {/* Auth Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="events" element={<EventManagement />} />
-          <Route path="teams" element={<Teams />} />
-          <Route path="participants" element={<ParticipantManagement />} />
-          <Route path="judges" element={<JudgeManagement />} />
-          <Route path="payments" element={<PaymentManagement />} />
-          <Route path="scoring" element={<Scoring />} />
-          <Route path="leaderboard" element={<AdminLeaderboard />} />
-          <Route path="reports" element={<ScoringOversight />} />
-        </Route>
-      </Routes>
-    </Router>
+          {/* Protected User Routes */}
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/teams" element={<Directory />} />
+          <Route path="/teams/register" element={<ProtectedRoute><TeamRegistration /></ProtectedRoute>} />
+          <Route path="/teams/register/:eventId" element={<ProtectedRoute><TeamRegistration /></ProtectedRoute>} />
+
+          {/* Judge Routes */}
+          <Route path="/judge" element={<ProtectedRoute roles={["judge"]}><JudgeLayout /></ProtectedRoute>}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<JudgeDashboard />} />
+            <Route path="events" element={<JudgeEvents />} />
+            <Route path="scoring" element={<JudgeScoring />} />
+            <Route path="scoring/:eventId" element={<JudgeScoring />} />
+          </Route>
+
+          {/* Admin Routes */}
+          <Route path="/admin" element={<ProtectedRoute roles={["admin"]}><AdminLayout /></ProtectedRoute>}>
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="events" element={<EventManagement />} />
+            <Route path="teams" element={<Teams />} />
+            <Route path="participants" element={<ParticipantManagement />} />
+            <Route path="judges" element={<JudgeManagement />} />
+            <Route path="payments" element={<PaymentManagement />} />
+            <Route path="scoring" element={<Scoring />} />
+            <Route path="leaderboard" element={<AdminLeaderboard />} />
+            <Route path="reports" element={<ScoringOversight />} />
+          </Route>
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

@@ -1,303 +1,150 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
+import API from '../../services/api';
 
 export default function ParticipantManagement() {
-  const [participants, setParticipants] = useState([
-    {
-      id: 1,
-      name: "David Chen",
-      email: "david.chen@example.com",
-      role: "Team Lead",
-      team: "CyberSentinels",
-      avatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuC54B4aEJax67h93Tt7YO35FxZXfJlx5r_eEUUowVYL9wsVuUNrNb-br3RJaajU8rui6zGTCidICmFJ5hym-OsG2JIqaS4GYOtyODmyEkpo68V7omD1xuKek0BX8Q6VNmrfH_uj1uONd2-4e9HifXQyg4iEbOTDTaonAi62na2rjUKxYbwKlC4IKcHMI6h9TCv6-DYbOascgRTtrpfKAX6Szydv7zJSC1_L-k51ZZxXrxingfbi4PkaHm_YOkNC85KZoADsOMndd4h-",
-      joinDate: "Oct 12, 2024",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Sarah Jenkins",
-      email: "sarah.jenkins@example.com",
-      role: "Developer",
-      team: "EcoFlow AI",
-      avatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAVMprmgQ3p09cecujI7CfLD0xtbj-OeF2vqriF_i_QIPDvCdMGGyT1BKHag69fl5eJe_k1BIj92g6UL2v9GWP0-btrF08Y4-ODqZIYbwYkD5AQXKnVeHGrThFOKgeITyCEcreiPq5BUySgiVsFwlX7fnry09DK8ZvjpFk4OVxPZpMbriFXxopUsEWdRHJd2tAw-vIMJV6oT8WdMITfLQ7Qsb13M98NUVDlI5z3htrvDbvvHiqB3HCWEXpST0oapm4pnPWJ58AULtQ5",
-      joinDate: "Oct 12, 2024",
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Marcus Thorne",
-      email: "marcus.thorne@example.com",
-      role: "Team Lead",
-      team: "Visionary Lab",
-      avatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCRImNXFhsVnmsF2ew8oBn-OTuISp54-HfEgDhyzEP3cWuubDtJFFoaoNq55levp_DdKsxaZbpEwtGTFr19JsJxkrR2pgEekGVT9Pex-hqodTNGmxip8cdU5P5-hyFqOq07bcC8EEFiQvJmGVIMsyeoU5_nSF3vk5avhieHPiAbz0bWQlPUZpYdx_nWufp9ksQsszWezXBSFbbaw6G500j4J1HjmaLe7ucQmf9pZ1ddTYTe9dHmVDr6uY03iX_IMDbOd2z2snzfC6g1",
-      joinDate: "Oct 14, 2024",
-      status: "Active",
-    },
-    {
-      id: 4,
-      name: "Elena Rodriguez",
-      email: "elena.rodriguez@example.com",
-      role: "Designer",
-      team: "Quantum Core",
-      avatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDLD32-aYtMVwMAB1mWPEhlw_6dYGhPPgLFLSb4gAxaT8xSO7MjE9LSZLhoMB-uUvmo3aylqann4kPics3XIjmYtQ0z7fol4SFuqWpB0r5wr6DQ-qvf91hW7u_CfpDrLsiEFcYjdq6l55RADoE0Pg-0r3vfa3VtWlGZmJhVG4E8cYDp0s67oRNvFa1S-CTqn_njx-WuXMRN8IDqDTDHXE2teon--LrUrdSUr_qX4A50MI5S11-DPpXa3mN8joxPKiJ1LHhWl2kTm7fb",
-      joinDate: "Oct 15, 2024",
-      status: "Pending",
-    },
-    {
-      id: 5,
-      name: "James Park",
-      email: "james.park@example.com",
-      role: "Backend Developer",
-      team: "EcoFlow AI",
-      avatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBXQwdvho8Zgs6yf6Pz_TiuVMg_HS0eAcmtTczMRrixqu8TxVA6jaKTi55mNGeT2qk3bf0h-hE1q_B3mYYM4RI1fDSffyRPnDFQHChRVJGK5GLPbVaOnA6etysuQ9gIKZl9fIGUDDYiKf0PI3MmPe-AjEkTgcLA1w92uTsY9mO9iA_6eLI6DBPiWyMDR2-RBlwn8Nqtuppf1m3ZXBOAigOMB5xiUDU9m3w5KTs27ZYhZ61_a-mr9dkdbtFIMBdL5JRUXWyuefSFKm85",
-      joinDate: "Oct 16, 2024",
-      status: "Active",
-    },
-    {
-      id: 6,
-      name: "Lisa Chen",
-      email: "lisa.chen@example.com",
-      role: "Researcher",
-      team: "EcoFlow AI",
-      avatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuABqhk27IY1_Xr6OgmFcBhrQUqiaWfGgK_z7DYHETU-Y-kpKVfUemQR3KYElT4xKMXR0S_CmA6u3fkWr_6xXP-LADVkXdg8zmM1jhZCGesN1iG227BpMgX0SOfCADjJO28URZ4mylLw1RNGwr0y4GzTxQqAmcoRPOVN_6jmSr4sIM1cxXCFb7d6SGR_wnpoynlqxXNrykbtEQ4UqfbOqXmAM36or_6agKqD0WzE4H3Dyoqi2VuGVWjEt55Lyp-DvzMtz-Z8n3nkZNho",
-      joinDate: "Oct 17, 2024",
-      status: "Active",
-    },
-    {
-      id: 7,
-      name: "Alex Rivera",
-      email: "alex.rivera@example.com",
-      role: "Frontend Developer",
-      team: "CyberSentinels",
-      avatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuDvZ-iPF1iacjNPQTsz-mm17flAiR_HkYEC38mUXRbQuMhx7H05h_E6iAUZyGm8LCEk6KspRiaeZS_8W80e96HfmIFyT_N7X24J2nNu0k-XRhqeJt-_4ehkWD7fiimT8Lj7oBuf6A05dlOIrXGc3TiUml_KyA_oH_HavMsTTdt0YvI5-HxUa_ds83oft_P187IMU2A6h89Tb8By661UHanjgi8-At0U5StHB9FmcUoZXH4XL1d6ENNATZ-WNhjVuWxre92tl1W9xv1c",
-      joinDate: "Oct 18, 2024",
-      status: "Active",
-    },
-    {
-      id: 8,
-      name: "Nina Petrov",
-      email: "nina.petrov@example.com",
-      role: "UI/UX Designer",
-      team: "Visionary Lab",
-      avatar:
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCyX8cBugzg9xU8iK5oD9r44sDpgetXT2ZJVEns2rphQloIynQ9GuJTRgcdcKgOqOLcJ4jJTwnW5VVK2Rhi5ZjMUvBSdRf-YczYymCkFH-DqjZ9vTe53RpgB_WSefozaqDwaV9DrrqfEHy6hCgn_pNzDCdPoIQte1JZiGVpDdt-BXNhnNcKOleL0f8DWLfDSd0ggCD5IWrCr56pGj4uIsMOsBrHwBWC2-WiF72AW1jidJDIcugYYTDDWqyk7E_Bx8hEe17rPThdY5mX",
-      joinDate: "Oct 19, 2024",
-      status: "Pending",
-    },
-  ]);
+  const [users, setUsers] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'participant', techStack: '' });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  useEffect(() => { fetchUsers(); }, [page, search, roleFilter]);
 
-  const handleDeleteParticipant = (id) => {
-    setParticipants(participants.filter((p) => p.id !== id));
-    setDeleteConfirm(null);
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const res = await API.get(`/users?page=${page}&limit=10&search=${search}&role=${roleFilter}`);
+      setUsers(res.data.users || []);
+      setTotal(res.data.total || 0);
+      setPages(res.data.pages || 1);
+    } catch (err) { console.error(err); } finally { setLoading(false); }
+  };
+
+  const handleCreate = async (e) => {
+    e.preventDefault(); setSubmitting(true); setError('');
+    try {
+      const payload = { ...formData, techStack: formData.role === 'judge' ? formData.techStack.split(',').map(s => s.trim()).filter(Boolean) : [] };
+      await API.post('/users', payload);
+      setShowForm(false); setFormData({ name: '', email: '', password: '', role: 'participant', techStack: '' });
+      fetchUsers();
+    } catch (err) { setError(err.response?.data?.message || 'Failed'); } finally { setSubmitting(false); }
+  };
+
+  const handleRoleChange = async (userId, newRole) => {
+    try { await API.put(`/users/${userId}/role`, { role: newRole }); fetchUsers(); } catch (err) { alert(err.response?.data?.message || 'Failed'); }
+  };
+
+  const handleDelete = async (userId) => {
+    if (!confirm('Delete this user?')) return;
+    try { await API.delete(`/users/${userId}`); fetchUsers(); } catch (err) { alert(err.response?.data?.message || 'Failed'); }
   };
 
   return (
-    <section className="font-body text-on-surface">
-      <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <div className="flex justify-between items-center mb-8">
         <div>
-          <p className="mb-1 flex items-center gap-2 text-xs font-medium text-secondary">
-            <span>Admin</span>
-            <span className="material-symbols-outlined text-sm">
-              chevron_right
-            </span>
-            <span className="text-primary">Participants</span>
-          </p>
-          <h1 className="font-headline text-4xl font-extrabold tracking-tight">
-            Participants Management
-          </h1>
+          <h1 className="text-3xl font-headline font-extrabold text-on-surface tracking-tight">User Management</h1>
+          <p className="text-on-surface-variant mt-1">{total} users total</p>
         </div>
-        <div className="flex gap-3">
-          <label className="relative block">
-            <span className="material-symbols-outlined pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-outline">
-              search
-            </span>
-            <input
-              type="text"
-              placeholder="Search participants..."
-              className="w-full rounded-full border border-transparent bg-surface-container-low py-3 pl-12 pr-4 text-sm outline-none transition focus:border-primary/20 focus:ring-2 focus:ring-primary/20 sm:w-72"
-            />
-          </label>
-        </div>
-      </header>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/40 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-outline">
-              Total Participants
-            </p>
-            <span className="material-symbols-outlined text-primary text-2xl">
-              person
-            </span>
-          </div>
-          <h3 className="font-headline text-3xl font-extrabold">
-            {participants.length}
-          </h3>
-          <p className="text-xs text-secondary mt-2">Across all events</p>
-        </div>
-
-        <div className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/40 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-outline">
-              Active Members
-            </p>
-            <span className="material-symbols-outlined text-tertiary text-2xl">
-              check_circle
-            </span>
-          </div>
-          <h3 className="font-headline text-3xl font-extrabold">
-            {participants.filter((p) => p.status === "Active").length}
-          </h3>
-          <p className="text-xs text-secondary mt-2">Currently active</p>
-        </div>
-
-        <div className="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/40 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-outline">
-              Pending Verification
-            </p>
-            <span className="material-symbols-outlined text-secondary text-2xl">
-              pending_actions
-            </span>
-          </div>
-          <h3 className="font-headline text-3xl font-extrabold">
-            {participants.filter((p) => p.status === "Pending").length}
-          </h3>
-          <p className="text-xs text-secondary mt-2">Awaiting approval</p>
-        </div>
+        <button onClick={() => setShowForm(true)} className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:shadow-lg transition-all active:scale-95">
+          <span className="material-symbols-outlined text-lg">person_add</span> Add User
+        </button>
       </div>
 
-      {/* Participants Table */}
-      <div className="overflow-hidden rounded-2xl border border-outline-variant/40 bg-surface-container-lowest shadow-sm">
-        <div className="overflow-x-auto">
+      {/* Filters */}
+      <div className="flex flex-wrap gap-4 mb-6">
+        <div className="relative flex-1 max-w-md">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+          <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} placeholder="Search by name or email..." className="w-full pl-12 pr-4 py-3 bg-surface-container-lowest border border-outline-variant/20 rounded-xl text-sm outline-none focus:border-primary/40" />
+        </div>
+        <select value={roleFilter} onChange={e => { setRoleFilter(e.target.value); setPage(1); }} className="bg-surface-container-lowest border border-outline-variant/20 rounded-xl py-3 px-4 text-sm outline-none">
+          <option value="">All Roles</option>
+          <option value="participant">Participants</option>
+          <option value="judge">Judges</option>
+          <option value="admin">Admins</option>
+        </select>
+      </div>
+
+      {/* Table */}
+      {loading ? (
+        <div className="flex justify-center py-12"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div></div>
+      ) : (
+        <div className="bg-surface-container-lowest rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 shadow-sm">
           <table className="w-full text-left">
-            <thead className="bg-surface-container-low/60 text-[10px] uppercase tracking-widest text-outline border-b border-outline-variant/40">
-              <tr>
-                <th className="px-6 py-4">Name</th>
-                <th className="px-6 py-4">Email</th>
-                <th className="px-6 py-4">Role</th>
-                <th className="px-6 py-4">Team</th>
-                <th className="px-6 py-4">Join Date</th>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant/20">
-              {participants.map((participant) => (
-                <tr
-                  key={participant.id}
-                  className="group transition hover:bg-surface-container-low/30"
-                >
+            <thead><tr className="bg-surface-container-low">
+              <th className="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Name</th>
+              <th className="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Email</th>
+              <th className="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Role</th>
+              <th className="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Verified</th>
+              <th className="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Joined</th>
+              <th className="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider text-right">Actions</th>
+            </tr></thead>
+            <tbody className="divide-y divide-surface-container">
+              {users.map(u => (
+                <tr key={u._id} className="hover:bg-surface-container-low/50 transition-colors">
+                  <td className="px-6 py-4 font-bold text-sm">{u.name}</td>
+                  <td className="px-6 py-4 text-sm text-on-surface-variant">{u.email}</td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={participant.avatar}
-                        alt={participant.name}
-                        className="h-8 w-8 rounded-full object-cover"
-                      />
-                      <div>
-                        <p className="text-sm font-bold">{participant.name}</p>
-                      </div>
-                    </div>
+                    <select value={u.role} onChange={e => handleRoleChange(u._id, e.target.value)} className="text-xs font-bold uppercase bg-blue-50 text-blue-600 px-2 py-1 rounded-full border-none outline-none">
+                      <option value="participant">Participant</option>
+                      <option value="judge">Judge</option>
+                      <option value="admin">Admin</option>
+                    </select>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-sm text-secondary">
-                      {participant.email}
-                    </p>
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${u.isEmailVerified ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>{u.isEmailVerified ? 'Yes' : 'No'}</span>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex px-3 py-1 rounded-full bg-primary-container/20 text-xs font-bold text-primary">
-                      {participant.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="text-sm font-medium">{participant.team}</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="text-sm text-secondary">
-                      {participant.joinDate}
-                    </p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold ${
-                        participant.status === "Active"
-                          ? "bg-tertiary-fixed text-on-tertiary-fixed-variant"
-                          : "bg-secondary-fixed text-on-secondary-container"
-                      }`}
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                      {participant.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition">
-                      <button className="rounded-lg p-1.5 text-secondary hover:bg-surface-container-low hover:text-primary transition">
-                        <span className="material-symbols-outlined text-lg">
-                          edit
-                        </span>
-                      </button>
-                      <button
-                        onClick={() => setDeleteConfirm(participant.id)}
-                        className="rounded-lg p-1.5 text-secondary hover:bg-surface-container-low hover:text-error transition"
-                      >
-                        <span className="material-symbols-outlined text-lg">
-                          delete
-                        </span>
-                      </button>
-                    </div>
+                  <td className="px-6 py-4 text-sm text-outline">{new Date(u.createdAt).toLocaleDateString()}</td>
+                  <td className="px-6 py-4 text-right">
+                    <button onClick={() => handleDelete(u._id)} className="p-2 hover:bg-red-50 rounded-lg transition-colors"><span className="material-symbols-outlined text-red-500 text-lg">delete</span></button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      </div>
-
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="w-full max-w-sm rounded-2xl bg-surface-container-lowest border border-outline-variant/40 p-6 shadow-2xl">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-full bg-error-container">
-                <span className="material-symbols-outlined text-error">
-                  delete_outline
-                </span>
+          {pages > 1 && (
+            <div className="flex justify-between items-center px-6 py-4 border-t border-slate-100">
+              <span className="text-xs text-outline">Page {page} of {pages}</span>
+              <div className="flex gap-2">
+                <button disabled={page<=1} onClick={() => setPage(p=>p-1)} className="px-3 py-1.5 rounded-lg border text-sm font-bold disabled:opacity-40 hover:bg-surface-container">Prev</button>
+                <button disabled={page>=pages} onClick={() => setPage(p=>p+1)} className="px-3 py-1.5 rounded-lg border text-sm font-bold disabled:opacity-40 hover:bg-surface-container">Next</button>
               </div>
-              <h2 className="font-headline text-xl font-bold">
-                Delete Participant?
-              </h2>
             </div>
-            <p className="mb-6 text-sm text-secondary">
-              Are you sure you want to delete this participant? This action
-              cannot be undone.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                className="px-5 py-2 text-sm font-bold text-outline transition hover:text-on-surface"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDeleteParticipant(deleteConfirm)}
-                className="rounded-lg bg-error px-5 py-2 text-sm font-bold text-white transition hover:brightness-110 active:scale-95"
-              >
-                Delete
-              </button>
-            </div>
+          )}
+        </div>
+      )}
+
+      {/* Add User Modal */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowForm(false)}>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h2 className="text-xl font-headline font-bold mb-6">Add New User</h2>
+            {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">{error}</div>}
+            <form onSubmit={handleCreate} className="space-y-4">
+              <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Full Name" className="w-full bg-surface-container-low rounded-xl py-3 px-4 text-sm outline-none border border-transparent focus:border-primary/40" />
+              <input required type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="Email" className="w-full bg-surface-container-low rounded-xl py-3 px-4 text-sm outline-none border border-transparent focus:border-primary/40" />
+              <input required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} placeholder="Password" type="password" className="w-full bg-surface-container-low rounded-xl py-3 px-4 text-sm outline-none border border-transparent focus:border-primary/40" />
+              <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full bg-surface-container-low rounded-xl py-3 px-4 text-sm outline-none border border-transparent focus:border-primary/40">
+                <option value="participant">Participant</option>
+                <option value="judge">Judge</option>
+              </select>
+              {formData.role === 'judge' && (
+                <input value={formData.techStack} onChange={e => setFormData({...formData, techStack: e.target.value})} placeholder="Tech Stack (comma separated)" className="w-full bg-surface-container-low rounded-xl py-3 px-4 text-sm outline-none border border-transparent focus:border-primary/40" />
+              )}
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-3 rounded-xl border font-bold text-sm">Cancel</button>
+                <button type="submit" disabled={submitting} className="flex-1 py-3 rounded-xl bg-primary text-white font-bold text-sm disabled:opacity-50">{submitting ? 'Adding...' : 'Add User'}</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
-    </section>
+    </div>
   );
 }

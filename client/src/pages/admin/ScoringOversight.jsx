@@ -1,277 +1,113 @@
-const summaryCards = [
-  {
-    label: "Total Teams Evaluated",
-    value: "124",
-    delta: "+8% vs last week",
-    icon: "groups",
-    tone: "bg-surface-container-lowest border border-outline-variant/40",
-  },
-  {
-    label: "Average Final Score",
-    value: "86.4",
-    delta: "+1.2 points",
-    icon: "analytics",
-    tone: "bg-surface-container-lowest border border-outline-variant/40",
-  },
-  {
-    label: "Completed Reviews",
-    value: "97%",
-    delta: "3 pending approvals",
-    icon: "task_alt",
-    tone: "bg-primary text-white shadow-[0px_10px_26px_rgba(0,61,155,0.3)]",
-  },
-];
-
-const submissionsByDay = [
-  { day: "Mon", value: 18 },
-  { day: "Tue", value: 22 },
-  { day: "Wed", value: 26 },
-  { day: "Thu", value: 21 },
-  { day: "Fri", value: 29 },
-  { day: "Sat", value: 24 },
-  { day: "Sun", value: 19 },
-];
-
-const scoreDistribution = [
-  { label: "90-100", value: 31, color: "bg-tertiary" },
-  { label: "80-89", value: 47, color: "bg-primary" },
-  { label: "70-79", value: 28, color: "bg-secondary" },
-  { label: "Below 70", value: 18, color: "bg-error" },
-];
-
-const trackPerformance = [
-  { track: "AI / ML", avg: 91.8 },
-  { track: "Fintech", avg: 87.4 },
-  { track: "Health Tech", avg: 84.2 },
-  { track: "Web3", avg: 82.7 },
-  { track: "Social Impact", avg: 80.9 },
-];
-
-const topTeams = [
-  { name: "Quantum Leap", event: "Global Hackathon 2024", score: 98.5 },
-  { name: "CyberSentinels", event: "Global Hackathon 2024", score: 94.2 },
-  { name: "NovaStack", event: "Tech Summit 2024", score: 93.6 },
-  { name: "Neural Knights", event: "Global Hackathon 2024", score: 91.8 },
-  { name: "Circuit Breakers", event: "Tech Summit 2024", score: 90.3 },
-];
-
-function maxValue(list, key) {
-  return list.reduce((max, item) => (item[key] > max ? item[key] : max), 0);
-}
+import React, { useState, useEffect } from 'react';
+import API from '../../services/api';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 export default function ScoringOversight() {
-  const maxDayValue = maxValue(submissionsByDay, "value");
-  const distributionTotal = scoreDistribution.reduce(
-    (sum, item) => sum + item.value,
-    0,
-  );
-  const maxTrackScore = maxValue(trackPerformance, "avg");
+  const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState('');
+  const [event, setEvent] = useState(null);
+  const [selectedRound, setSelectedRound] = useState('');
+  const [scores, setScores] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => { API.get('/events?limit=100').then(res => setEvents(res.data.events || [])).catch(console.error); }, []);
+
+  useEffect(() => {
+    if (selectedEvent) API.get(`/events/${selectedEvent}`).then(res => { setEvent(res.data); if (res.data.rounds?.[0]) setSelectedRound(res.data.rounds[0]._id); }).catch(console.error);
+  }, [selectedEvent]);
+
+  useEffect(() => {
+    if (selectedEvent && selectedRound) {
+      setLoading(true);
+      API.get(`/scores/event/${selectedEvent}/round/${selectedRound}`).then(res => setScores(res.data)).catch(console.error).finally(() => setLoading(false));
+    }
+  }, [selectedEvent, selectedRound]);
+
+  const exportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text(event?.title || 'Event Scores', 14, 22);
+    const round = event?.rounds?.find(r => r._id === selectedRound);
+    doc.setFontSize(12);
+    doc.text(`Round: ${round?.name || 'N/A'}`, 14, 32);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 40);
+
+    const headers = ['Rank', 'Team', ...(round?.evaluationCriteria?.map(c => c.name) || []), 'Total'];
+    const data = scores.map((s, i) => [
+      i + 1,
+      s.team?.teamName || 'N/A',
+      ...(s.criteriaScores?.map(cs => cs.score) || []),
+      s.totalScore || 0,
+    ]);
+
+    doc.autoTable({ head: [headers], body: data, startY: 48, styles: { fontSize: 10 }, headStyles: { fillColor: [0, 82, 204] } });
+    doc.save(`${event?.title || 'scores'}_round_${round?.name || ''}.pdf`);
+  };
 
   return (
-    <section className="font-body text-on-surface">
-      <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div>
+      <div className="flex justify-between items-center mb-8">
         <div>
-          <p className="mb-1 text-xs font-medium text-secondary">
-            Admin / Reports
-          </p>
-          <h1 className="font-headline text-4xl font-extrabold tracking-tight">
-            Analytics Reports
-          </h1>
-          <p className="mt-2 text-sm text-slate-500">
-            Snapshot of scoring activity, score health, and team performance.
-          </p>
+          <h1 className="text-3xl font-headline font-extrabold text-on-surface tracking-tight">Scoring & Reports</h1>
+          <p className="text-on-surface-variant mt-1">View scores and export event-wise data as PDF.</p>
         </div>
-        <button className="w-fit rounded-full bg-gradient-primary px-6 py-2.5 text-sm font-bold text-white shadow-[0px_10px_24px_rgba(0,61,155,0.28)] active:scale-95">
-          Export Report
-        </button>
-      </header>
-
-      <div className="mb-8 grid grid-cols-1 gap-5 md:grid-cols-3">
-        {summaryCards.map((card) => (
-          <article key={card.label} className={`rounded-2xl p-5 ${card.tone}`}>
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-xs font-bold uppercase tracking-widest text-outline">
-                {card.label}
-              </p>
-              <span className="material-symbols-outlined text-xl">
-                {card.icon}
-              </span>
-            </div>
-            <p className="font-headline text-4xl font-extrabold">
-              {card.value}
-            </p>
-            <p className="mt-1 text-xs font-semibold text-slate-500">
-              {card.delta}
-            </p>
-          </article>
-        ))}
-      </div>
-
-      <div className="mb-8 grid grid-cols-12 gap-6">
-        <article className="col-span-12 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 lg:col-span-7">
-          <div className="mb-5 flex items-center justify-between">
-            <h2 className="font-headline text-2xl font-bold">
-              Submissions Trend
-            </h2>
-            <p className="text-xs font-bold uppercase tracking-widest text-outline">
-              Last 7 Days
-            </p>
-          </div>
-          <div className="grid grid-cols-7 gap-3">
-            {submissionsByDay.map((item) => (
-              <div key={item.day} className="flex flex-col items-center gap-2">
-                <div className="flex h-40 w-full items-end rounded-xl bg-surface-container-low p-2">
-                  <div
-                    className="w-full rounded-md bg-linear-to-t from-primary to-primary-container"
-                    style={{ height: `${(item.value / maxDayValue) * 100}%` }}
-                    title={`${item.value} submissions`}
-                  ></div>
-                </div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-outline">
-                  {item.day}
-                </p>
-                <p className="text-xs font-bold text-primary">{item.value}</p>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="col-span-12 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 lg:col-span-5">
-          <h3 className="mb-5 font-headline text-xl font-bold">
-            Score Distribution
-          </h3>
-          <div className="mb-5 flex items-center justify-center">
-            <div
-              className="relative h-40 w-40 rounded-full"
-              style={{
-                background: `conic-gradient(#24a148 0 ${
-                  (scoreDistribution[0].value / distributionTotal) * 360
-                }deg, #0052cc ${
-                  (scoreDistribution[0].value / distributionTotal) * 360
-                }deg ${
-                  ((scoreDistribution[0].value + scoreDistribution[1].value) /
-                    distributionTotal) *
-                  360
-                }deg, #6f42c1 ${
-                  ((scoreDistribution[0].value + scoreDistribution[1].value) /
-                    distributionTotal) *
-                  360
-                }deg ${
-                  ((scoreDistribution[0].value +
-                    scoreDistribution[1].value +
-                    scoreDistribution[2].value) /
-                    distributionTotal) *
-                  360
-                }deg, #d7263d ${
-                  ((scoreDistribution[0].value +
-                    scoreDistribution[1].value +
-                    scoreDistribution[2].value) /
-                    distributionTotal) *
-                  360
-                }deg 360deg)`,
-              }}
-            >
-              <div className="absolute inset-5 grid place-items-center rounded-full bg-surface-container-lowest text-center">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-outline">
-                  Total
-                </p>
-                <p className="font-headline text-2xl font-extrabold">
-                  {distributionTotal}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="space-y-2">
-            {scoreDistribution.map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center justify-between"
-              >
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`h-2.5 w-2.5 rounded-full ${item.color}`}
-                  ></span>
-                  <span className="text-sm font-medium">{item.label}</span>
-                </div>
-                <span className="text-sm font-bold text-primary">
-                  {item.value}
-                </span>
-              </div>
-            ))}
-          </div>
-        </article>
-      </div>
-
-      <div className="mb-8 grid grid-cols-12 gap-6">
-        <article className="col-span-12 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 lg:col-span-7">
-          <h3 className="mb-4 font-headline text-xl font-bold">
-            Track Performance
-          </h3>
-          <div className="space-y-3">
-            {trackPerformance.map((item) => (
-              <div key={item.track}>
-                <div className="mb-1 flex items-center justify-between">
-                  <p className="text-sm font-semibold">{item.track}</p>
-                  <p className="text-sm font-bold text-primary">
-                    {item.avg.toFixed(1)}
-                  </p>
-                </div>
-                <div className="h-2.5 w-full overflow-hidden rounded-full bg-surface-container-low">
-                  <div
-                    className="h-full rounded-full bg-linear-to-r from-primary to-secondary"
-                    style={{ width: `${(item.avg / maxTrackScore) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </article>
-
-        <article className="col-span-12 rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 lg:col-span-5">
-          <h3 className="mb-4 font-headline text-xl font-bold">Top Teams</h3>
-          <div className="space-y-3">
-            {topTeams.map((team, index) => (
-              <div
-                key={team.name}
-                className="flex items-center justify-between rounded-xl bg-surface-container-low/60 px-3 py-2.5"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="grid h-7 w-7 place-items-center rounded-full bg-primary-fixed text-[10px] font-black text-primary">
-                    {index + 1}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold">{team.name}</p>
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-outline">
-                      {team.event}
-                    </p>
-                  </div>
-                </div>
-                <p className="font-headline text-lg font-extrabold text-primary">
-                  {team.score.toFixed(1)}
-                </p>
-              </div>
-            ))}
-          </div>
-        </article>
-      </div>
-
-      <article className="relative overflow-hidden rounded-2xl bg-linear-to-br from-inverse-surface to-[#18202a] p-6 text-white shadow-[0px_14px_30px_rgba(22,28,36,0.35)]">
-        <span className="material-symbols-outlined absolute -right-8 -bottom-10 text-[160px] text-white/5">
-          monitoring
-        </span>
-        <div className="relative z-10 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h3 className="font-headline text-2xl font-bold">Weekly Summary</h3>
-            <p className="text-sm text-slate-300">
-              Overall scoring quality improved by 8%. High-score segment
-              expanded by 4 teams.
-            </p>
-          </div>
-          <button className="w-fit rounded-full bg-white/15 px-5 py-2.5 text-sm font-bold backdrop-blur-sm transition hover:bg-white/25">
-            Download Insights
+        {scores.length > 0 && (
+          <button onClick={exportPDF} className="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:shadow-lg transition-all active:scale-95">
+            <span className="material-symbols-outlined text-lg">picture_as_pdf</span> Export PDF
           </button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider mb-2 font-label">Event</label>
+          <select value={selectedEvent} onChange={e => { setSelectedEvent(e.target.value); setScores([]); }} className="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl py-3 px-4 text-sm outline-none focus:border-primary/40">
+            <option value="">Select event...</option>
+            {events.map(ev => <option key={ev._id} value={ev._id}>{ev.title}</option>)}
+          </select>
         </div>
-      </article>
-    </section>
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider mb-2 font-label">Round</label>
+          <select value={selectedRound} onChange={e => setSelectedRound(e.target.value)} disabled={!event} className="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-xl py-3 px-4 text-sm outline-none focus:border-primary/40">
+            <option value="">Select round...</option>
+            {event?.rounds?.map(r => <option key={r._id} value={r._id}>Round {r.roundNumber}: {r.name}</option>)}
+          </select>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-12"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div></div>
+      ) : scores.length > 0 ? (
+        <div className="bg-surface-container-lowest rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead><tr className="bg-surface-container-low">
+                <th className="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Rank</th>
+                <th className="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">Team</th>
+                {event?.rounds?.find(r => r._id === selectedRound)?.evaluationCriteria?.map((c, i) => (
+                  <th key={i} className="px-6 py-4 text-xs font-bold text-outline uppercase tracking-wider">{c.name}</th>
+                ))}
+                <th className="px-6 py-4 text-xs font-bold text-primary uppercase tracking-wider text-right">Total</th>
+              </tr></thead>
+              <tbody className="divide-y divide-surface-container">
+                {scores.map((s, idx) => (
+                  <tr key={s._id} className={`hover:bg-surface-container-low/50 transition-colors ${idx < 3 ? 'bg-amber-50/30' : ''}`}>
+                    <td className="px-6 py-4 font-headline font-extrabold text-lg">{String(idx + 1).padStart(2, '0')}</td>
+                    <td className="px-6 py-4 font-bold text-sm">{s.team?.teamName || 'N/A'}</td>
+                    {s.criteriaScores?.map((cs, ci) => (
+                      <td key={ci} className="px-6 py-4 text-sm font-medium text-on-surface-variant">{cs.score}</td>
+                    ))}
+                    <td className="px-6 py-4 text-right font-headline font-bold text-primary text-lg">{s.totalScore}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : selectedEvent && selectedRound ? (
+        <div className="text-center py-12 bg-surface-container-lowest rounded-2xl border"><span className="material-symbols-outlined text-4xl text-outline mb-2 block">leaderboard</span><p className="text-on-surface-variant">No scores recorded for this round yet.</p></div>
+      ) : null}
+    </div>
   );
 }

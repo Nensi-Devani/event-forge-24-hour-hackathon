@@ -1,237 +1,163 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
+import API from '../../services/api';
+import { useAuth } from '../../utils/AuthContext';
 
 export default function EventDetails() {
+  const { id } = useParams();
+  const { user, isAuthenticated, isJudge } = useAuth();
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [applyMsg, setApplyMsg] = useState('');
+
+  useEffect(() => { fetchEvent(); }, [id]);
+
+  const fetchEvent = async () => {
+    try { const res = await API.get(`/events/${id}`); setEvent(res.data); } catch (err) { console.error(err); } finally { setLoading(false); }
+  };
+
+  const isJudgeAssigned = event?.judges?.some(j => (j._id || j) === user?._id);
+
+  const isActive = event?.registrationDeadline && new Date(event.registrationDeadline) > new Date();
+
+  if (loading) return (
+    <div className="font-body bg-surface text-on-surface min-h-screen flex flex-col"><Header /><div className="flex-1 flex items-center justify-center"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div></div></div>
+  );
+
+  if (!event) return (
+    <div className="font-body bg-surface text-on-surface min-h-screen flex flex-col"><Header /><div className="flex-1 flex items-center justify-center"><p className="text-lg text-outline">Event not found.</p></div></div>
+  );
+
   return (
     <div className="font-body bg-surface text-on-surface antialiased min-h-screen flex flex-col">
       <Header />
-      
       <main className="max-w-[1440px] mx-auto px-8 py-12 w-full flex-1">
-        {/* Hero Section */}
-        <section className="relative mb-20 rounded-xl overflow-hidden shadow-2xl">
-          <div className="h-[400px] w-full">
-            <img 
-              alt="Hackathon Banner" 
-              className="w-full h-full object-cover" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAf1SQfCtSmr9g4b8jNFvZeA-OUtWDF0SPPK4OvVfj6ewb9sClLZd2scyLbt4bKGOJW92ayD3RKc7KkOmo98ilmSSrmceWxokUdJJtdggPTHThipX2DDh9e7j4U7LmwPrOWIyRME6wU73XvMsO-e7iIqABHtuy8GCS8ylFfU0R5X55gnhNzz7SO16r-cUZDYjtWsNMqmvqolZ5b4mjTZycZG3O8m44lgJbPrXON7ulSMv3JBJJcGKazHjFVpNgDlyCIyxMJ1vqtIgZA" 
-            />
+        {/* Hero */}
+        <section className="relative mb-16 rounded-xl overflow-hidden shadow-2xl">
+          <div className="h-[350px] w-full bg-gradient-to-br from-indigo-600 to-purple-700">
+            {event.banner && <img alt={event.title} className="w-full h-full object-cover" src={event.banner} />}
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-container text-white rounded-full text-xs font-bold tracking-widest uppercase mb-4 w-fit">
-              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
-              Live Registration
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-sm text-white rounded-full text-xs font-bold tracking-widest uppercase mb-4 w-fit">
+              <span className="material-symbols-outlined text-sm">{isActive ? 'bolt' : 'event_busy'}</span>
+              {isActive ? 'Live Registration' : 'Registration Closed'}
             </div>
-            <h1 className="text-6xl font-extrabold text-white tracking-tighter mb-4 font-headline">Nexus Hack 2024</h1>
-            <p className="text-xl text-white/80 max-w-2xl font-body leading-relaxed">
-              The premier global hackathon for decentralized infrastructure and AI integration. Join 5,000+ developers to build the next generation of the web.
-            </p>
+            <h1 className="text-5xl font-extrabold text-white tracking-tighter mb-3 font-headline">{event.title}</h1>
+            <p className="text-lg text-white/80 max-w-2xl font-body">{event.description}</p>
           </div>
         </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          {/* Left Content Area */}
-          <div className="lg:col-span-8 space-y-20">
-            
-            {/* Overview & Problem Statements */}
-            <section>
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-1.5 h-8 bg-primary-container rounded-full"></div>
-                <h2 className="text-3xl font-extrabold tracking-tight font-headline">Challenge Tracks</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <TrackCard 
-                  icon="smart_toy" 
-                  title="AI & Autonomy" 
-                  description="Build autonomous agents that can manage decentralized resources without human intervention." 
-                />
-                <TrackCard 
-                  icon="account_balance_wallet" 
-                  title="DeFi 2.0" 
-                  description="Redefining liquidity through innovative lending protocols and cross-chain asset bridges." 
-                />
-                <TrackCard 
-                  icon="security" 
-                  title="Privacy First" 
-                  description="Implementing zero-knowledge proofs for secure data exchange in healthcare and fintech." 
-                />
-                <div className="p-8 rounded-xl bg-surface-container-lowest transition-all hover:translate-x-1 border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center text-center">
-                  <span className="material-symbols-outlined text-outline mb-2">add_circle</span>
-                  <p className="text-sm font-medium text-outline pt-2">More tracks being announced...</p>
+          <div className="lg:col-span-8 space-y-16">
+            {/* Rounds */}
+            {event.rounds?.length > 0 && (
+              <section>
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="w-1.5 h-8 bg-primary-container rounded-full"></div>
+                  <h2 className="text-3xl font-extrabold tracking-tight font-headline">Event Rounds</h2>
                 </div>
-              </div>
-            </section>
+                <div className="space-y-6">
+                  {event.rounds.map((round, idx) => (
+                    <div key={round._id || idx} className="bg-surface-container-lowest p-6 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">{round.roundNumber || idx+1}</div>
+                          <div>
+                            <h3 className="font-headline font-bold text-lg">{round.name}</h3>
+                            {round.rules && <p className="text-xs text-outline mt-0.5">{round.rules}</p>}
+                          </div>
+                        </div>
+                        {round.qualification && (
+                          <span className="text-xs bg-amber-50 text-amber-600 px-2 py-1 rounded-full font-bold capitalize">
+                            {round.qualification.type?.replace('_', ' ')}: {round.qualification.value}
+                          </span>
+                        )}
+                      </div>
+                      {round.evaluationCriteria?.length > 0 && (
+                        <div>
+                          <p className="text-xs font-bold uppercase text-outline mb-2">Evaluation Criteria</p>
+                          <div className="flex flex-wrap gap-2">
+                            {round.evaluationCriteria.map((c, ci) => (
+                              <span key={ci} className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-medium">
+                                {c.name} (max: {c.maxScore})
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
-            {/* Timeline / Schedule */}
-            <section>
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-1.5 h-8 bg-primary-container rounded-full"></div>
-                <h2 className="text-3xl font-extrabold tracking-tight font-headline">Event Roadmap</h2>
-              </div>
-              <div className="space-y-6">
-                <TimelineStep 
-                  num="01" 
-                  title="Ideation & Selection" 
-                  date="Nov 15 - Nov 20" 
-                  description="Teams submit initial project proposals and undergo basic technical feasibility screening."
-                  active 
-                />
-                <TimelineStep 
-                  num="02" 
-                  title="The 48h Sprint" 
-                  date="Dec 01 - Dec 03" 
-                  description="The core building phase. 48 hours of uninterrupted development with mentor support." 
-                />
-                <TimelineStep 
-                  num="03" 
-                  title="Grand Finale & Demos" 
-                  date="Dec 10, 2024" 
-                  description="Top 10 teams pitch to a panel of VC judges and industry experts at the main stage." 
-                  isLast 
-                />
-              </div>
-            </section>
-
-            {/* Rules & Guidelines */}
-            <section className="bg-surface-container-high/30 p-10 rounded-2xl">
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-1.5 h-8 bg-primary-container rounded-full"></div>
-                <h2 className="text-3xl font-extrabold tracking-tight font-headline">Code of Conduct</h2>
-              </div>
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-                <RuleItem title="Originality First" desc="No pre-built projects. All code must be written during the event." />
-                <RuleItem title="Team Limits" desc="Minimum 2, Maximum 5 members per team. Solo is permitted but discouraged." />
-                <RuleItem title="Open Source" desc="Final submissions must be open-sourced under MIT or Apache 2.0 license." />
-                <RuleItem title="Inclusivity" desc="Zero tolerance for harassment or discriminatory behavior." />
-              </ul>
-            </section>
+            {/* Rules */}
+            {event.rules && (
+              <section className="bg-surface-container-high/30 p-10 rounded-2xl">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-1.5 h-8 bg-primary-container rounded-full"></div>
+                  <h2 className="text-3xl font-extrabold tracking-tight font-headline">Rules & Guidelines</h2>
+                </div>
+                <p className="text-on-surface-variant leading-relaxed whitespace-pre-line">{event.rules}</p>
+              </section>
+            )}
           </div>
 
           {/* Sidebar */}
-          <aside className="lg:col-span-4 sticky top-28 space-y-8">
-            {/* Registration Card */}
+          <aside className="lg:col-span-4 sticky top-28 space-y-6">
             <div className="bg-surface-container-lowest rounded-2xl shadow-xl p-8 border border-outline-variant/10">
-              <div className="mb-8">
-                <div className="text-3xl font-extrabold text-primary mb-1 font-headline">Free Admission</div>
-                <p className="text-sm text-on-surface-variant font-medium">Application closes in 14 days</p>
+              <div className="mb-6">
+                <div className="text-3xl font-extrabold text-primary mb-1 font-headline">{event.isPaid ? `₹${event.registrationFee}` : 'Free'}</div>
+                <p className="text-sm text-on-surface-variant">{isActive ? `Deadline: ${new Date(event.registrationDeadline).toLocaleDateString()}` : 'Registration closed'}</p>
               </div>
-              <div className="space-y-6 mb-8">
-                <SummaryRow icon="event" label="Registration Ends" value="Oct 31, 2024" />
-                <SummaryRow icon="location_on" label="Venue" value="San Francisco, CA" />
-                <SummaryRow icon="group" label="Registered" value="1,248 / 5,000" />
+              <div className="space-y-4 mb-6">
+                <InfoRow icon="group" label="Team Size" value={`${event.minTeamSize} - ${event.maxTeamSize}`} />
+                <InfoRow icon="groups" label="Max Teams" value={event.maxTeams || '∞'} />
+                <InfoRow icon="format_list_numbered" label="Rounds" value={event.rounds?.length || 0} />
+                <InfoRow icon="category" label="Type" value={event.type || 'N/A'} />
               </div>
-              <Link to="/teams/register" className="block text-center w-full bg-gradient-primary text-[#ffffff] py-4 rounded-xl font-headline font-extrabold text-lg shadow-lg hover:shadow-xl active:scale-95 transition-all">
-                Register Team
-              </Link>
-              <Link to="/judge/dashboard" className="block text-center w-full mt-3 bg-surface-container-highest text-primary py-4 rounded-xl font-headline font-extrabold text-lg shadow-sm hover:shadow active:scale-95 transition-all outline outline-1 outline-primary/20 hover:bg-primary-container/20">
-                <div className="flex items-center justify-center gap-2">
-                  <span className="material-symbols-outlined text-[20px]">gavel</span>
-                  Apply for Judgement
-                </div>
-              </Link>
-              <p className="text-center text-[10px] text-outline mt-4 uppercase tracking-widest font-bold font-label">
-                By registering you agree to our Terms
-              </p>
-            </div>
 
-            {/* Quick Facts / Prizes Bento */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-tertiary-fixed p-6 rounded-2xl col-span-2 flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] uppercase font-bold text-on-tertiary-fixed-variant tracking-widest mb-1 font-label">Total Prize Pool</p>
-                  <h3 className="text-3xl font-extrabold text-on-tertiary-fixed font-headline">₹150,000</h3>
-                </div>
-                <span className="material-symbols-outlined text-4xl text-on-tertiary-fixed" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
-              </div>
-              <div className="bg-secondary-fixed p-6 rounded-2xl">
-                <p className="text-[10px] uppercase font-bold text-on-secondary-fixed-variant tracking-widest mb-1 font-label">Global Rank</p>
-                <h3 className="text-xl font-extrabold text-on-secondary-fixed font-headline">Tier 1</h3>
-              </div>
-              <div className="bg-surface-container-high p-6 rounded-2xl">
-                <p className="text-[10px] uppercase font-bold text-on-surface-variant tracking-widest mb-1 font-label">Mentors</p>
-                <h3 className="text-xl font-extrabold text-on-surface font-headline">120+</h3>
-              </div>
-            </div>
+              {isActive && isAuthenticated && (
+                <Link to={`/teams/register/${id}`} className="block text-center w-full bg-gradient-primary text-white py-4 rounded-xl font-headline font-extrabold text-lg shadow-lg hover:shadow-xl active:scale-95 transition-all mb-3">
+                  Register Team
+                </Link>
+              )}
 
-            {/* Location Map Preview */}
-            <div className="bg-surface-container-lowest rounded-2xl overflow-hidden h-48 relative group shadow-sm border border-slate-100 dark:border-slate-800">
-              <img 
-                alt="Map" 
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuC61sO2ObXaXZFdmUZKk4g_hSPBr4Xy5LEICHkbfpZPhmU_6s03gjwBzY5qqH1Kve0hWF18CGsStDOtubHRI8pCirp0NF3W2RlEZ13Of_dTxBja-DNn5vac0mt6OYYI6dU1p0RV9UnyKROoW_fqpxTOSKheHhQA9zaAhivHVL7L12_HO2crjNtDT5mg-BntSlO-moBG6VYYX2M05x94oBmVJm-rS8qGJ1JdnJMmS5BtJT3cQiJ5akaX7VwDrzxO3a9SYPMoVNGggAfq" 
-              />
-              <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
-                <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2 shadow-lg hover:bg-white transition-colors cursor-pointer">
-                  <span className="material-symbols-outlined text-primary text-sm">explore</span>
-                  <span className="text-xs font-bold uppercase tracking-tight text-primary">Open in Maps</span>
+              <Link to={`/events/${id}/leaderboard`} className="block text-center w-full bg-surface-container-highest text-primary py-3 rounded-xl font-bold text-sm shadow-sm hover:shadow active:scale-95 transition-all outline outline-1 outline-primary/20 mb-3">
+                <span className="material-symbols-outlined text-sm align-middle mr-1">leaderboard</span> View Leaderboard
+              </Link>
+
+              {isAuthenticated && isJudge && !isJudgeAssigned && (
+                <div className="mt-3">
+                  <p className="text-xs text-outline text-center">You can apply via the Judge Panel once admin assigns you.</p>
                 </div>
-              </div>
+              )}
+
+              {isJudgeAssigned && (
+                <div className="mt-3 p-3 bg-green-50 rounded-xl text-center">
+                  <span className="text-xs font-bold text-green-600">✓ You are assigned as a judge for this event</span>
+                </div>
+              )}
+
+              {applyMsg && <p className="text-center text-xs mt-2 text-primary font-medium">{applyMsg}</p>}
             </div>
           </aside>
         </div>
       </main>
-
       <Footer />
     </div>
   );
 }
 
-function TrackCard({ icon, title, description }) {
+function InfoRow({ icon, label, value }) {
   return (
-    <div className="p-8 rounded-xl bg-surface-container-lowest transition-all hover:translate-x-1 shadow-sm border border-slate-100 dark:border-slate-800">
-      <span className="material-symbols-outlined text-primary mb-4 text-3xl">{icon}</span>
-      <h3 className="text-xl font-bold mb-3 font-headline">{title}</h3>
-      <p className="text-on-surface-variant text-sm leading-relaxed">{description}</p>
-    </div>
-  );
-}
-
-function TimelineStep({ num, title, date, description, active, isLast }) {
-  return (
-    <div className="relative flex gap-8 items-start">
-      <div className="flex flex-col items-center">
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold z-10 ${
-          active ? 'bg-primary text-white shadow-md' : 'bg-surface-container-high text-on-surface-variant'
-        }`}>
-          {num}
-        </div>
-        {!isLast && <div className="w-0.5 h-full bg-surface-container-highest absolute top-12 left-6 -z-0"></div>}
-      </div>
-      <div className={`flex-1 p-6 rounded-xl ${active ? 'bg-surface-container-low' : 'bg-surface-container-lowest shadow-sm border border-slate-100 dark:border-slate-800'}`}>
-        <div className="flex justify-between items-center mb-2">
-          <h4 className="font-bold text-lg font-headline">{title}</h4>
-          <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase font-label ${
-            active ? 'text-primary-container bg-primary-fixed' : 'text-outline bg-surface-container-high'
-          }`}>
-            {date}
-          </span>
-        </div>
-        <p className="text-sm text-on-surface-variant pt-1">{description}</p>
-      </div>
-    </div>
-  );
-}
-
-function RuleItem({ title, desc }) {
-  return (
-    <li className="flex gap-4">
-      <span className="material-symbols-outlined text-primary-container">check_circle</span>
-      <div>
-        <span className="block font-bold pb-1 font-headline">{title}</span>
-        <span className="text-sm text-on-surface-variant leading-tight">{desc}</span>
-      </div>
-    </li>
-  );
-}
-
-function SummaryRow({ icon, label, value }) {
-  return (
-    <div className="flex justify-between items-center pb-4 border-b border-outline-variant/20 last:border-0 last:pb-0">
-      <span className="text-on-surface-variant text-sm flex items-center gap-2 font-medium">
+    <div className="flex justify-between items-center pb-3 border-b border-outline-variant/20 last:border-0 last:pb-0">
+      <span className="text-on-surface-variant text-sm flex items-center gap-2">
         <span className="material-symbols-outlined text-lg">{icon}</span> {label}
       </span>
-      <span className="font-bold text-sm">{value}</span>
+      <span className="font-bold text-sm capitalize">{value}</span>
     </div>
   );
 }
