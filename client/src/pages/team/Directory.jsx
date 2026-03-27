@@ -223,7 +223,7 @@ export default function Directory() {
               <span className="material-symbols-outlined">emoji_events</span>
             </div>
             <h3 className="text-2xl font-extrabold mb-4 tracking-tight font-headline">Prize Pool Update</h3>
-            <p className="text-outline text-sm leading-relaxed mb-6">Total prizes increased to $150,000 across all categories. Top team in AI category wins an exclusive accelerator spot.</p>
+            <p className="text-outline text-sm leading-relaxed mb-6">Total prizes increased to ₹150,000 across all categories. Top team in AI category wins an exclusive accelerator spot.</p>
             <a className="text-primary font-bold text-sm flex items-center gap-2 group w-fit cursor-pointer">
               View full breakdown
               <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>

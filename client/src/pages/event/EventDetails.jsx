@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 
@@ -120,9 +121,15 @@ export default function EventDetails() {
                 <SummaryRow icon="location_on" label="Venue" value="San Francisco, CA" />
                 <SummaryRow icon="group" label="Registered" value="1,248 / 5,000" />
               </div>
-              <button className="w-full bg-gradient-primary text-white py-4 rounded-xl font-headline font-extrabold text-lg shadow-lg active:scale-95 transition-all">
+              <Link to="/teams/register" className="block text-center w-full bg-gradient-primary text-[#ffffff] py-4 rounded-xl font-headline font-extrabold text-lg shadow-lg hover:shadow-xl active:scale-95 transition-all">
                 Register Team
-              </button>
+              </Link>
+              <Link to="/judge/dashboard" className="block text-center w-full mt-3 bg-surface-container-highest text-primary py-4 rounded-xl font-headline font-extrabold text-lg shadow-sm hover:shadow active:scale-95 transition-all outline outline-1 outline-primary/20 hover:bg-primary-container/20">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="material-symbols-outlined text-[20px]">gavel</span>
+                  Apply for Judgement
+                </div>
+              </Link>
               <p className="text-center text-[10px] text-outline mt-4 uppercase tracking-widest font-bold font-label">
                 By registering you agree to our Terms
               </p>
@@ -133,7 +140,7 @@ export default function EventDetails() {
               <div className="bg-tertiary-fixed p-6 rounded-2xl col-span-2 flex items-center justify-between">
                 <div>
                   <p className="text-[10px] uppercase font-bold text-on-tertiary-fixed-variant tracking-widest mb-1 font-label">Total Prize Pool</p>
-                  <h3 className="text-3xl font-extrabold text-on-tertiary-fixed font-headline">$150,000</h3>
+                  <h3 className="text-3xl font-extrabold text-on-tertiary-fixed font-headline">₹150,000</h3>
                 </div>
                 <span className="material-symbols-outlined text-4xl text-on-tertiary-fixed" style={{ fontVariationSettings: "'FILL' 1" }}>workspace_premium</span>
               </div>
@@ -185,7 +192,7 @@ function TimelineStep({ num, title, date, description, active, isLast }) {
     <div className="relative flex gap-8 items-start">
       <div className="flex flex-col items-center">
         <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold z-10 ${
-          active ? 'bg-primary-container text-white' : 'bg-surface-container-highest text-primary'
+          active ? 'bg-primary text-white shadow-md' : 'bg-surface-container-high text-on-surface-variant'
         }`}>
           {num}
         </div>

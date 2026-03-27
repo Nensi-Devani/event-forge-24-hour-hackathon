@@ -9,7 +9,7 @@ export default function RecentRegistrations() {
       avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCU1rALidak3g8uOkzrjzk2P3auVTrsGksf7UUoUgecS5Z6-fUIZoAvBo9P4hf_LNOD5a3TjoriV4Y86cnx3njNePx4TrmIhtPD-VfrxJfK2fWrg_7NqLIAxyf47ALNg-1a2HffCm3dHxyvjIRy3QOPqlOVuSKt2UCFlM12o2kFRysG39Ihng0FiiAwhM5Ej7y-_N6GRukR1X55UUOgzwTW0q-4irNLKpjwnNwX2LF1o9x1NXBHYpd4hWhNX00qZ4lp4sqFeyLqp9H5',
       event: 'Global Tech Summit 2024',
       date: 'Oct 24, 2:15 PM',
-      amount: '$299.00',
+      amount: '₹299.00',
       status: 'Completed',
       statusClass: 'bg-tertiary-fixed text-on-tertiary-fixed-variant'
     },
@@ -20,7 +20,7 @@ export default function RecentRegistrations() {
       avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDLJ7QILDlgly9su1w7Drt1md4zfKmhakpaaavlsQQEjtLALU6_NPZk378xZcuKzIdok90ViEK-jPalkGj_V7Q0zone0Poq-_2Y46tCyp6B7PRcymcFz5XZKgSev7mcX0T5Mvww7d4Z4VxY4U-G5xohTXePLyZL4iN2fkC5eiAHB_y5lQ_o_6_rocGZteRg15ztbIfKtYQ-LVDcEvwGBSwzl3Hx_P9S-r9fjSQCBXlpJMJTJm6S5_3ppVpfFZI5RTz0AMtOSGlorCOq',
       event: 'Design Week Workshop',
       date: 'Oct 24, 11:30 AM',
-      amount: '$150.00',
+      amount: '₹150.00',
       status: 'Processing',
       statusClass: 'bg-secondary-container text-on-secondary-container'
     },
@@ -31,7 +31,7 @@ export default function RecentRegistrations() {
       avatar: null,
       event: 'Global Tech Summit 2024',
       date: 'Oct 23, 5:45 PM',
-      amount: '$299.00',
+      amount: '₹299.00',
       status: 'Completed',
       statusClass: 'bg-tertiary-fixed text-on-tertiary-fixed-variant'
     }

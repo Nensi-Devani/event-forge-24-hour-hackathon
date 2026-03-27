@@ -1,19 +1,55 @@
 import React from "react";
 
 export default function PaymentManagement() {
-  const eventPayments = [
-    { id: 1, eventName: "Global Hackathon 2024", price: 150 },
-    { id: 2, eventName: "Tech Summit 2024", price: 120 },
-    { id: 3, eventName: "Innovation Challenge", price: 100 },
-    { id: 4, eventName: "Regional Finals", price: 180 },
+  const transactions = [
+    {
+      id: "#TXN-88291",
+      team: "Velocity Strikers",
+      event: "Nexus Summer Open",
+      amount: "$150.00",
+      date: "Oct 24, 2023",
+      method: "Credit Card",
+      methodIcon: "credit_card",
+      status: "Paid",
+      statusColor: "bg-tertiary-fixed text-on-tertiary-fixed-variant",
+    },
+    {
+      id: "#TXN-88292",
+      team: "Iron Titans",
+      event: "Fall Championship",
+      amount: "$150.00",
+      date: "Oct 25, 2023",
+      method: "PayPal",
+      methodIcon: "account_balance_wallet",
+      methodIconColor: "text-blue-500",
+      status: "Pending",
+      statusColor: "bg-surface-container-high text-slate-600",
+      activeRow: true,
+    },
+    {
+      id: "#TXN-88293",
+      team: "Cloud Runners",
+      event: "Elite Invitational",
+      amount: "$150.00",
+      date: "Oct 26, 2023",
+      method: "Credit Card",
+      methodIcon: "credit_card",
+      status: "Refunded",
+      statusColor: "bg-error-container text-on-error-container",
+    },
+    {
+      id: "#TXN-88294",
+      team: "Neon Knights",
+      event: "Regional Qualifiers",
+      amount: "$150.00",
+      date: "Oct 27, 2023",
+      method: "Credit Card",
+      methodIcon: "credit_card",
+      status: "Paid",
+      statusColor: "bg-tertiary-fixed text-on-tertiary-fixed-variant",
+      activeRow: true,
+    },
   ];
-
-  const totalRevenue = eventPayments.reduce((sum, item) => sum + item.price, 0);
-  const averagePrice = totalRevenue / eventPayments.length;
-  const highestPricedEvent = eventPayments.reduce(
-    (max, item) => (item.price > max.price ? item : max),
-    eventPayments[0],
-  );
 
   return (
     <section className="bg-surface text-on-surface min-h-screen font-body antialiased overflow-x-hidden">
@@ -24,48 +60,101 @@ export default function PaymentManagement() {
           </h2>
         </header>
 
-        <div className="p-8">
-          <div className="mb-8">
-            <h1 className="text-4xl font-black tracking-tight font-headline">
-              Event Payments
-            </h1>
-            <p className="mt-2 text-slate-500">
-              Select an event and click Pay to complete payment.
-            </p>
-          </div>
+        <div className="p-8 space-y-10">
+          {/* Revenue Summary Grid */}
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Card 1: Total Revenue */}
+            <div className="bg-surface-container-lowest p-8 rounded-xl shadow-[0px_20px_40px_rgba(0,24,72,0.06)] flex flex-col justify-between h-48 relative overflow-hidden group border border-slate-100 dark:border-slate-800">
+              <div className="z-10">
+                <p className="text-sm font-semibold text-secondary uppercase tracking-wider mb-2 font-label">
+                  Total Revenue
+                </p>
+                <h3 className="text-4xl font-extrabold text-on-surface font-headline">
+                  $142,550.00
+                </h3>
+              </div>
+              <div className="z-10 flex items-center gap-2 text-tertiary font-bold text-sm">
+                <span className="material-symbols-outlined">trending_up</span>
+                <span>+12.5% from last month</span>
+              </div>
+              <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <span className="material-symbols-outlined text-[120px]">
+                  payments
+                </span>
+              </div>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
-            <article className="rounded-xl bg-surface-container-lowest border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-500 font-label">
-                Total Revenue
-              </p>
-              <p className="mt-2 text-3xl font-black font-headline text-primary">
-                ${totalRevenue.toFixed(2)}
-              </p>
-            </article>
+            {/* Card 2: Pending Payments */}
+            <div className="bg-surface-container-lowest p-8 rounded-xl shadow-[0px_20px_40px_rgba(0,24,72,0.06)] flex flex-col justify-between h-48 relative overflow-hidden group border-b-4 border-blue-500">
+              <div className="z-10">
+                <p className="text-sm font-semibold text-secondary uppercase tracking-wider mb-2 font-label">
+                  Pending Payments
+                </p>
+                <h3 className="text-4xl font-extrabold text-on-surface font-headline">
+                  $8,450.00
+                </h3>
+              </div>
+              <div className="z-10 flex items-center gap-2 text-slate-500 font-bold text-sm">
+                <span className="material-symbols-outlined">schedule</span>
+                <span>56 invoices awaiting action</span>
+              </div>
+              <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <span className="material-symbols-outlined text-[120px]">
+                  pending_actions
+                </span>
+              </div>
+            </div>
 
-            <article className="rounded-xl bg-surface-container-lowest border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-500 font-label">
-                Events Count
-              </p>
-              <p className="mt-2 text-3xl font-black font-headline text-on-surface">
-                {eventPayments.length}
-              </p>
-            </article>
+            {/* Card 3: Refunds */}
+            <div className="bg-surface-container-lowest p-8 rounded-xl shadow-[0px_20px_40px_rgba(0,24,72,0.06)] flex flex-col justify-between h-48 relative overflow-hidden group border border-slate-100 dark:border-slate-800">
+              <div className="z-10">
+                <p className="text-sm font-semibold text-secondary uppercase tracking-wider mb-2 font-label">
+                  Refunds processed
+                </p>
+                <h3 className="text-4xl font-extrabold text-on-surface font-headline">
+                  $1,200.00
+                </h3>
+              </div>
+              <div className="z-10 flex items-center gap-2 text-error font-bold text-sm">
+                <span className="material-symbols-outlined">history</span>
+                <span>8 requests this cycle</span>
+              </div>
+              <div className="absolute -right-4 -bottom-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                <span className="material-symbols-outlined text-[120px]">
+                  keyboard_return
+                </span>
+              </div>
+            </div>
+          </section>
 
-            <article className="rounded-xl bg-surface-container-lowest border border-slate-100 dark:border-slate-800 p-5 shadow-sm">
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-500 font-label">
-                Avg / Highest Price
-              </p>
-              <p className="mt-2 text-2xl font-black font-headline text-on-surface">
-                ${averagePrice.toFixed(2)}
-              </p>
-              <p className="mt-1 text-xs text-slate-500">
-                Highest: {highestPricedEvent.eventName} ($
-                {highestPricedEvent.price.toFixed(2)})
-              </p>
-            </article>
-          </div>
+          {/* Filters & Data Table */}
+          <section className="space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <h2 className="text-2xl font-bold font-headline text-on-surface">
+                Transaction History
+              </h2>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center bg-surface-container-low rounded-lg p-1">
+                  <button className="px-4 py-2 text-xs font-bold bg-white rounded-md shadow-sm text-primary">
+                    All Time
+                  </button>
+                  <button className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-on-surface transition-colors">
+                    30 Days
+                  </button>
+                  <button className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-on-surface transition-colors">
+                    7 Days
+                  </button>
+                </div>
+                <div className="relative">
+                  <button className="flex items-center gap-2 px-4 py-2 bg-surface-container-low rounded-lg text-sm font-semibold text-slate-700 hover:bg-surface-container-high transition-colors">
+                    <span className="material-symbols-outlined text-lg">
+                      filter_list
+                    </span>
+                    Status: All
+                  </button>
+                </div>
+              </div>
+            </div>
 
           <div className="bg-surface-container-lowest rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm">
             <div className="overflow-x-auto">

@@ -21,7 +21,7 @@ export default function TeamRegistration() {
             {/* Step 1 Done */}
             <div className="flex flex-col items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary-container text-white flex items-center justify-center shadow-lg">
-                <span className="material-symbols-outlined text-lg">check</span>
+                <span className="font-headline font-extrabold">1</span>
               </div>
               <span className="font-headline font-bold text-xs uppercase tracking-widest text-primary">Team Info</span>
             </div>
@@ -140,7 +140,7 @@ export default function TeamRegistration() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-secondary font-medium">Base Registration</span>
-                    <span className="font-headline font-bold">$150.00</span>
+                    <span className="font-headline font-bold">₹150.00</span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-secondary font-medium">Members (2nd-4th)</span>
@@ -148,18 +148,18 @@ export default function TeamRegistration() {
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-secondary font-medium">Workshop Bundle</span>
-                    <span className="font-headline font-bold">$25.00</span>
+                    <span className="font-headline font-bold">₹25.00</span>
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-secondary font-medium">Processing Fee</span>
-                    <span className="font-headline font-bold">$4.50</span>
+                    <span className="font-headline font-bold">₹4.50</span>
                   </div>
                 </div>
 
                 <div className="pt-6 border-t border-outline-variant/30">
                   <div className="flex justify-between items-center mb-6">
                     <span className="text-on-surface font-extrabold font-headline">Total Amount</span>
-                    <span className="text-3xl font-extrabold font-headline text-primary">$179.50</span>
+                    <span className="text-3xl font-extrabold font-headline text-primary">₹179.50</span>
                   </div>
                   
                   <div className="bg-surface-container-low p-4 rounded-lg space-y-3">
